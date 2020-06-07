@@ -1,1 +1,0 @@
-screen -dm -S clock /root/eink-clock/forever.sh 
