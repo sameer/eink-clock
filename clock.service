@@ -1,13 +1,9 @@
 [Unit]
 Description=Create a clock screenshot and send it to the Kindle every minute
-
-[Timer]
-OnCalendar=*:0/1
-Persistent=true
+Wants=network-online.target
+After=network-online.target
 
 [Service]
 Type=oneshot
-Wants=network-online.target
-After=network-online.target
 ExecStart=/root/eink-clock/oneshot.sh
 WorkingDirectory=/tmp
