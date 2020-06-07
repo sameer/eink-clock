@@ -18,21 +18,7 @@ A clock for e-ink displays like that in the [Kindle DX Graphite](https://en.wiki
 
 #### Building
 
-##### Build on your computer (cross-compile)
-
-###### ArchLinux
-
-Get the cross-compile toolchain:
-```bash
-yay -S arm-linux-gnueabihf-gcc-linaro-bin
-```
-
-Build
-```bash
-HARFBUZZ_SYS_NO_PKG_CONFIG=1 cargo build --release
-```
-
-##### Or install directly on an ARM device
+##### Install directly on an ARM device (easier but takes longer)
 
 First get the harfbuzz library, used for text rendering:
 ###### ArchLinux
@@ -43,8 +29,23 @@ pacman -S harfbuzz
 Now install.
 ```bash
 # May take a long time
-cargo install https://github.com/sameer/eink-clock.git
+cargo install --git https://github.com/sameer/eink-clock
 ```
+
+##### Build on your computer (cross-compile, harder but takes less time)
+
+###### ArchLinux
+
+Get the cross-compile toolchain:
+```bash
+yay -S arm-bcm2708-linux-gnueabi
+```
+
+Build
+```bash
+HARFBUZZ_SYS_NO_PKG_CONFIG=1 cargo build --release
+```
+
 
 #### Deploying
 
