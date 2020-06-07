@@ -1,5 +1,5 @@
 [Unit]
-Description=Run clock every minute
+Description=Run clock oneshot every minute
 
 [Timer]
 OnCalendar=*:0/1
