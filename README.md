@@ -32,7 +32,7 @@ Build
 HARFBUZZ_SYS_NO_PKG_CONFIG=1 cargo build --release
 ```
 
-##### Building on an ARM device
+##### Or install directly on an ARM device
 
 First get the harfbuzz library, used for text rendering:
 ###### ArchLinux
@@ -40,10 +40,10 @@ First get the harfbuzz library, used for text rendering:
 pacman -S harfbuzz
 ```
 
-Now build.
+Now install.
 ```bash
 # May take a long time
-cargo build --release
+cargo install https://github.com/sameer/eink-clock.git
 ```
 
 #### Deploying
