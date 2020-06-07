@@ -9,5 +9,5 @@ Persistent=true
 Type=oneshot
 Wants=network-online.target
 After=network-online.target
-ExecStart=/usr/bin/systemctl /root/eink-clock/oneshot.sh
+ExecStart=/root/eink-clock/oneshot.sh
 WorkingDirectory=/tmp
