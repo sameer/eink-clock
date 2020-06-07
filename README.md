@@ -34,9 +34,11 @@ cargo install --git https://github.com/sameer/eink-clock
 
 ##### Build on your computer (cross-compile, harder but takes less time)
 
+Not working right now
+
 ###### ArchLinux
 
-Get the cross-compile toolchain:
+~~Get the cross-compile toolchain:~~
 ```bash
 yay -S arm-bcm2708-linux-gnueabi
 ```
