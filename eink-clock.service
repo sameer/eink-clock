@@ -6,4 +6,4 @@ After=network-online.target
 [Service]
 Type=oneshot
 ExecStart=/root/eink-clock/oneshot.sh
-WorkingDirectory=/tmp
+WorkingDirectory=/root/eink-clock/
