@@ -20,16 +20,20 @@ A clock for e-ink displays like that in the [Kindle DX Graphite](https://en.wiki
 
 ##### Install directly on an ARM device (easier but takes longer)
 
-First get the harfbuzz library, used for text rendering:
+First get the necessary dependencies
+
 ###### ArchLinux
 ```bash
+# harfbuzz library, used for text rendering:
 pacman -S harfbuzz
+# ssh to kindle root without any credentials
+pacman -S sshpass
 ```
 
-Now install.
+Now build.
 ```bash
 # May take a long time
-cargo install --git https://github.com/sameer/eink-clock
+cargo build --release
 ```
 
 ##### Build on your computer (cross-compile, harder but takes less time)
