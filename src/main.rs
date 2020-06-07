@@ -19,7 +19,7 @@ fn main() {
     ctx.set_font_size(96.);
     ctx.set_source_rgb(1., 1., 1.);
     ctx.translate(HEIGHT / 2., WIDTH / 2.);
-    ctx.rotate(90.0 * std::f64::consts::PI / 180.0);
+    ctx.rotate(-90.0 * std::f64::consts::PI / 180.0);
 
     let date = get_date_as_string();
     let extent = ctx.text_extents(&date);
