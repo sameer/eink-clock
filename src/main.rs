@@ -29,7 +29,7 @@ fn render(svg_text: &str) -> Result<Box<dyn OutputImage>, usvg::Error> {
     options.background = Some(usvg::Color::white());
 
     let tree = usvg::Tree::from_str(svg_text, &options.usvg)?;
-    let backend = Box::new(resvg::backend_raqote::Backend);
+    let backend = resvg::default_backend();
     Ok(backend
         .render_to_image(&tree, &options)
         .expect("couldn't allocate image in raqote backend"))
@@ -43,7 +43,8 @@ fn save(mut image: Box<dyn OutputImage>) -> Result<(), std::io::Error> {
             let first = x + y * WIDTH;
             let second = (WIDTH - 1 - x) * HEIGHT + y;
             let mut acc = 0u16;
-            for z in 0..3 { // ignore alpha channel
+            for z in 0..3 {
+                // ignore alpha channel
                 acc += rgba_vec[first as usize * 4 + z] as u16;
             }
             rotated_rgba_vec[second as usize] = (acc / 3) as u8;
@@ -90,10 +91,15 @@ fn get_current_weather_as_string() -> String {
     let current_observation = weathergov::get_current_observation(WEATHER_STATION).unwrap();
     let weather = current_observation.weather.unwrap();
     let condition_emoji = match weather.as_str() {
-        "Overcast" => "☁️",
+        "Overcast" => "☁",
         "A few clouds" => "🌤️",
         "Mostly Cloudy" => "🌥️",
-        other => other
+        other => other,
     };
-    format!("{} {}°F 🌬️ {}MPH", condition_emoji, current_observation.temp_f.unwrap(), current_observation.wind_mph.unwrap())
+    format!(
+        "{} {}°F 🌬️ {}MPH",
+        condition_emoji,
+        current_observation.temp_f.unwrap(),
+        current_observation.wind_mph.unwrap()
+    )
 }
