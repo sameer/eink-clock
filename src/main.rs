@@ -7,7 +7,7 @@ const HEIGHT: u32 = 824;
 const DPI: f64 = 150.0;
 
 const LANG: &str = "en-US";
-const FONT: &str = "Inter";
+const FONT: &str = "Noto Sans";
 const WEATHER_STATION: &str = "KTPA";
 
 fn main() {
@@ -92,6 +92,7 @@ fn get_current_weather_as_string() -> String {
     let condition_emoji = match weather.as_str() {
         "Overcast" => "☁️",
         "A few clouds" => "🌤️",
+        "Mostly Cloudy" => "🌥️",
         other => other
     };
     format!("{} {}°F 🌬️ {}MPH", condition_emoji, current_observation.temp_f.unwrap(), current_observation.wind_mph.unwrap())
