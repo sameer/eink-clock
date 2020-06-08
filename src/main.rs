@@ -1,6 +1,3 @@
-use std::fs::File;
-use std::path::Path;
-
 use chrono::prelude::*;
 use resvg::prelude::*;
 
@@ -52,8 +49,8 @@ fn save(mut image: Box<dyn OutputImage>) -> Result<(), std::io::Error> {
             rotated_rgba_vec[second as usize] = (acc / 3) as u8;
         }
     }
-    let mut f = File::create(Path::new("out.png"))?;
-    let mut encoder = png::Encoder::new(&mut f, HEIGHT, WIDTH);
+    let mut stdout = std::io::stdout();
+    let mut encoder = png::Encoder::new(&mut stdout, HEIGHT, WIDTH);
     encoder.set_color(png::ColorType::Grayscale);
     encoder.set_depth(png::BitDepth::Eight);
     let mut writer = encoder.write_header()?;
