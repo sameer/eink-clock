@@ -8,7 +8,7 @@ pub fn get_svg_text() -> String {
         r#"
     <svg viewBox="0 0 {width} {height}" width="{width}" height="{height}" xmlns="http://www.w3.org/2000/svg">
         <text font-size="0.75in" x="50%" y="0.75in" text-anchor="middle">{date}</text>
-        <text font-size="0.75in" x="50%" y="2in" text-anchor="middle">whee {weather}</text>
+        <text font-size="0.75in" x="50%" y="2in" text-anchor="middle">{weather}</text>
         <text font-size="1.5in" x="50%" y="95%" text-anchor="middle">{time}</text>
         <g transform="translate(100 100)">{weather_svg}</g>
     </svg>
