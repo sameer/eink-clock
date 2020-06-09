@@ -63,6 +63,12 @@ static ip_address=192.168.2.1/24
 static routers=192.168.2.1
 ```
 
+To do this manually:
+```bash
+ip a add 192.168.2.1/24 dev usb0
+ip link set dev usb0 up
+```
+
 If you are connecting multiple Kindles, you'll need to change the usbnetwork config to assign unique MAC addresses and unique IP addresses.
 
 If you haven't already, enable dhcpcd on startup so the Kindle network interface can be configured on startup and hotplug.
