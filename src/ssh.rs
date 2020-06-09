@@ -26,7 +26,6 @@ pub fn eips_show_image(tcp_stream: TcpStream, png: &[u8]) -> Result<(), ssh2::Er
     let mut channel = session.channel_session()?;
     channel.exec("/usr/sbin/eips -g /dev/shm/out.png")?;
     channel.close()?;
-    channel.wait_close()?;
     session.disconnect(None, "done", None)?;
     // tcp_stream.shutdown(std::net::Shutdown::Both).expect("couldn't shut down tcp stream");
     Ok(())
