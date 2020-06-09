@@ -54,7 +54,7 @@ fn get_current_weather_svg(current_observation: weathergov::parse::CurrentObserv
     match weather.as_str() {
         "Overcast" => include_str!("../emoji/2601.svg"),
         "A few clouds" => include_str!("../emoji/1F324.svg"),
-        "Mostly Cloudy" => include_str!("../emoji/1F32C.svg"),
+        "Mostly Cloudy" => include_str!("../emoji/1F325.svg"),
         other => other,
     }.to_owned()
 }
