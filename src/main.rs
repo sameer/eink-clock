@@ -13,8 +13,7 @@ use clock::get_svg_text;
 use svg::{render, image_into_png};
 use ssh::{eips_show_image, open_tcp_connection};
 
-use std::net::{Ipv4Addr, SocketAddrV4};
-use std::time::Duration;
+use std::net::Ipv4Addr;
 
 /// E Ink Pearl 1200x824 150 DPI 4-bit 16-level grayscale
 const WIDTH: u32 = 1200;
