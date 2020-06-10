@@ -2,7 +2,7 @@ use chrono::prelude::*;
 
 use crate::{HEIGHT, WEATHER_STATION, WIDTH, FONT};
 
-pub fn get_svg_text() -> String {
+pub fn get_svg_text(date_time: &DateTime<Local>) -> String {
     let current_observation = weathergov::get_current_observation(WEATHER_STATION).unwrap();
     format!(
         r#"
@@ -18,22 +18,20 @@ pub fn get_svg_text() -> String {
         half_width = WIDTH / 2,
         half_height = HEIGHT / 2,
         font = FONT,
-        date = get_date_as_string(),
-        time = get_time_as_string(),
+        date = get_date_as_string(date_time),
+        time = get_time_as_string(date_time),
         weather = get_current_weather_as_string(&current_observation),
         weather_svg = get_current_weather_svg(current_observation)
     )
 }
 
-fn get_date_as_string() -> String {
-    let now: DateTime<Local> = Local::now();
-    format!("{}", now.format("%A %B %_d, %Y"))
+fn get_date_as_string(date_time: &DateTime<Local>) -> String {
+    format!("{}", date_time.format("%A %B %_d, %Y"))
 }
 
-fn get_time_as_string() -> String {
-    let now: DateTime<Local> = Local::now();
-    let (_, hour) = now.hour12();
-    format!("{}{}", hour, now.format(":%M %p"))
+fn get_time_as_string(date_time: &DateTime<Local>) -> String {
+    let (_, hour) = date_time.hour12();
+    format!("{}{}", date_time, date_time.format(":%M %p"))
 }
 
 fn get_current_weather_as_string(

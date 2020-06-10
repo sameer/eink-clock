@@ -4,14 +4,18 @@ extern crate clap;
 #[macro_use]
 extern crate log;
 
+use chrono::prelude::*;
+
 mod clock;
 mod network;
 mod ssh;
 mod svg;
+mod audio;
 
+use audio::play_audio_for_hour;
 use clock::get_svg_text;
 use svg::{render, image_into_png};
-use ssh::{eips_show_image, open_tcp_connection};
+use ssh::{eips_show_image, open_tcp_connection, open_ssh_session, amixer_set_master_volume, aplay_audio_nonblocking};
 
 use std::net::Ipv4Addr;
 
@@ -39,7 +43,8 @@ fn main() {
     )
     .get_matches();
 
-    let svg_text = get_svg_text();
+    let now = Local::now();
+    let svg_text = get_svg_text(&now);
 
     if matches.is_present("debug") {
         info!("In debug mode, printing svg to stdout");
@@ -49,6 +54,19 @@ fn main() {
 
     let image = render(&svg_text).expect("failed to render SVG");
     let png = image_into_png(image).expect("failed to convert image to png");
+
     let ssh_tcp_stream = open_tcp_connection().expect("failed to connect to Kindle");
-    eips_show_image(ssh_tcp_stream, &png).expect("failed to send image to Kindle");
+    let mut ssh_session = open_ssh_session(ssh_tcp_stream).expect("ssh authorized failed, is the password correct?");
+
+    eips_show_image(&mut ssh_session, &png).expect("failed to send image to Kindle");
+
+    if now.minute() == 0 && !night_time(&now) {
+        let (_, hour12) = now.hour12();
+        play_audio_for_hour(&mut ssh_session, now.hour(), hour12);
+    }
+    ssh_session.disconnect(None, "done sending commands", None).unwrap();
+}
+
+fn night_time(now: &DateTime<Local>) -> bool {
+    now.hour() < 7 || now.hour() > 23
 }
