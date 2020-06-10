@@ -5,8 +5,6 @@ authors = ["Sameer Puri <purisame@spuri.io>"]
 edition = "2018"
 description = "A clock for e-ink displays like that in the Kindle DX Graphite"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 resvg = { version = "0", features = [ "text", "raqote-backend" ] }
 chrono = "0"
@@ -18,3 +16,6 @@ clap = "2"
 log = "0"
 env_logger = "0"
 ipnetwork = "0"
+
+[profile.release]
+opt-level = 'z'  # Optimize for size.

@@ -15,7 +15,7 @@ mod audio;
 use audio::play_audio_for_hour;
 use clock::get_svg_text;
 use svg::{render, image_into_png};
-use ssh::{eips_show_image, open_tcp_connection, open_ssh_session, amixer_set_master_volume, aplay_audio_nonblocking};
+use ssh::{eips_show_image, open_tcp_connection, open_ssh_session};
 
 use std::net::Ipv4Addr;
 
@@ -62,7 +62,7 @@ fn main() {
 
     if now.minute() == 0 && !night_time(&now) {
         let (_, hour12) = now.hour12();
-        play_audio_for_hour(&mut ssh_session, now.hour(), hour12);
+        play_audio_for_hour(&mut ssh_session, now.hour(), hour12).expect("failed to play hourly tune");
     }
     ssh_session.disconnect(None, "done sending commands", None).unwrap();
 }

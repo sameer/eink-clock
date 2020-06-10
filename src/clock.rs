@@ -31,7 +31,7 @@ fn get_date_as_string(date_time: &DateTime<Local>) -> String {
 
 fn get_time_as_string(date_time: &DateTime<Local>) -> String {
     let (_, hour) = date_time.hour12();
-    format!("{}{}", date_time, date_time.format(":%M %p"))
+    format!("{}{}", hour, date_time.format(":%M %p"))
 }
 
 fn get_current_weather_as_string(
