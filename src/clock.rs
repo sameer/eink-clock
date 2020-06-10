@@ -51,8 +51,11 @@ fn get_current_weather_svg(current_observation: weathergov::parse::CurrentObserv
     let weather = current_observation.weather.unwrap();
     match weather.as_str() {
         "Overcast" => include_str!("../emoji/2601.svg"),
-        "A few clouds" => include_str!("../emoji/1F324.svg"),
+        "A Few Clouds" => include_str!("../emoji/1F324.svg"),
         "Mostly Cloudy" => include_str!("../emoji/1F325.svg"),
+        "Thunderstorm" => include_str!("../emoji/26C8.svg"),
+        "Thunderstorm in Vicinity" => include_str!("../emoji/1F326.svg"),
+        "Fair" => include_str!("../emoji/2600.svg"),
         other => other,
     }.to_owned()
 }
