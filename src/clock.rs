@@ -1,13 +1,13 @@
 use chrono::prelude::*;
 
-use crate::{HEIGHT, WEATHER_STATION, WIDTH, FONT};
+use crate::{FONT, HEIGHT, WEATHER_STATION, WIDTH};
 
 pub fn get_svg_text(date_time: &DateTime<Local>) -> String {
     let current_observation = weathergov::get_current_observation(WEATHER_STATION).unwrap();
     format!(
         r#"
     <svg viewBox="0 0 {width} {height}" width="{width}" height="{height}" xmlns="http://www.w3.org/2000/svg">
-        <text font-family="{font}" font-size="0.75in" x="50%" y="0.75in" text-anchor="middle">{date}</text>
+        <text font-family="{font}" font-size="0.5in" x="50%" y="0.75in" text-anchor="middle">{date}</text>
         <text font-family="{font}" font-size="0.75in" x="50%" y="2in" text-anchor="middle">{weather}</text>
         <text font-family="{font}" font-size="1.5in" x="50%" y="95%" text-anchor="middle">{time}</text>
         <g transform="translate({half_width} {half_height}) scale(0.25 0.25) translate(-{half_width} -{half_height})">{weather_svg}</g>
@@ -57,5 +57,6 @@ fn get_current_weather_svg(current_observation: weathergov::parse::CurrentObserv
         "Thunderstorm in Vicinity" => include_str!("../emoji/1F326.svg"),
         "Fair" => include_str!("../emoji/2600.svg"),
         other => other,
-    }.to_owned()
+    }
+    .to_owned()
 }

@@ -6,16 +6,16 @@ extern crate log;
 
 use chrono::prelude::*;
 
+mod audio;
 mod clock;
 mod network;
 mod ssh;
 mod svg;
-mod audio;
 
 use audio::play_audio_for_hour;
 use clock::get_svg_text;
-use svg::{render, image_into_png};
-use ssh::{eips_show_image, open_tcp_connection, open_ssh_session};
+use ssh::{eips_show_image, open_ssh_session, open_tcp_connection};
+use svg::{image_into_png, render};
 
 use std::net::Ipv4Addr;
 
@@ -56,15 +56,19 @@ fn main() {
     let png = image_into_png(image).expect("failed to convert image to png");
 
     let ssh_tcp_stream = open_tcp_connection().expect("failed to connect to Kindle");
-    let mut ssh_session = open_ssh_session(ssh_tcp_stream).expect("ssh authorized failed, is the password correct?");
+    let mut ssh_session =
+        open_ssh_session(ssh_tcp_stream).expect("ssh authorized failed, is the password correct?");
 
     eips_show_image(&mut ssh_session, &png).expect("failed to send image to Kindle");
 
     if now.minute() == 0 && !night_time(&now) {
         let (_, hour12) = now.hour12();
-        play_audio_for_hour(&mut ssh_session, now.hour(), hour12).expect("failed to play hourly tune");
+        play_audio_for_hour(&mut ssh_session, now.hour(), hour12)
+            .expect("failed to play hourly tune");
     }
-    ssh_session.disconnect(None, "done sending commands", None).unwrap();
+    ssh_session
+        .disconnect(None, "done sending commands", None)
+        .unwrap();
 }
 
 fn night_time(now: &DateTime<Local>) -> bool {

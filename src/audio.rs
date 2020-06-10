@@ -2,12 +2,12 @@ use ssh2::Session;
 
 use crate::ssh::{amixer_set_master_volume, aplay_audio_nonblocking};
 
-pub fn play_audio_for_hour(session: &mut Session, hour24:u32, hour12: u32) -> Result<(), ssh2::Error> {
-    let volume = if hour24 < 7 || hour12 > 22 {
-        0
-    } else {
-        20
-    };
+pub fn play_audio_for_hour(
+    session: &mut Session,
+    hour24: u32,
+    hour12: u32,
+) -> Result<(), ssh2::Error> {
+    let volume = if hour24 < 7 || hour12 > 22 { 0 } else { 20 };
 
     amixer_set_master_volume(session, volume)?;
 
