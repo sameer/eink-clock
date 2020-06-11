@@ -6,7 +6,7 @@ edition = "2018"
 description = "A clock for e-ink displays like that in the Kindle DX Graphite"
 
 [dependencies]
-resvg = { version = "0", features = [ "text", "raqote-backend" ] }
+cairo-rs = { version = "0", features = [ "png" ], default-features = false }
 chrono = "0"
 png = "0"
 weathergov = { version = "0", git = "https://github.com/sameer/weathergov.git" }

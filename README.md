@@ -56,14 +56,12 @@ If you cross-compiled, transfer the project folder to the device.
 
 To network with a Kindle that has usbnetwork enabled and shows up as usb0 in `ip addr`:
 
-Create a static profile for any usb network gadgets at the end of `/etc/dhcpd.conf`:
-```
-interface usb*
-static ip_address=192.168.2.1/24
-static routers=192.168.2.1
-```
+###### Automatically
 
-To do this manually:
+Work in progress
+
+###### Manually
+
 ```bash
 ip a add 192.168.2.1/24 dev usb0
 ip link set dev usb0 up
@@ -71,15 +69,6 @@ ip link set dev usb0 up
 
 If you are connecting multiple Kindles, you'll need to change the usbnetwork config to assign unique MAC addresses and unique IP addresses.
 
-If you haven't already, enable dhcpcd on startup so the Kindle network interface can be configured on startup and hotplug.
-```bash
-systemctl enable dhcpcd
-# Make sure to disable interface-specific targets like wlan0, if needed
-systemctl disable dhcpcd@wlan0
-reboot
-```
-
-It will hang on the start command if it's set up incorrectly.
 Now, the device can network with the Kindle.
 
 On the Kindle, make sure you've enabled auto-start for usbnetwork just in case the Kindle loses power:
@@ -105,3 +94,7 @@ systemctl start eink-clock.service
 ```
 
 And that's it, the clock should now be running! Feel free to [contact me](https://purisa.me/about/) if you have problems.
+
+## Special Thanks
+
+* [David Allen Sibley](https://en.wikipedia.org/wiki/David_Allen_Sibley) for his beautiful drawings of North American birds.
