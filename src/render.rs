@@ -3,7 +3,7 @@ use crate::{HEIGHT, WIDTH};
 use cairo::{Context, FontFace, FontOptions, FontSlant, FontWeight, Format, ImageSurface, Status};
 
 pub fn create_surface() -> Result<ImageSurface, Status> {
-    ImageSurface::create(Format::Rgb24, HEIGHT as i32, WIDTH as i32)
+    ImageSurface::create(Format::A8, HEIGHT as i32, WIDTH as i32)
 }
 
 pub fn create_context(surf: &ImageSurface) -> Context {

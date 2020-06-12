@@ -8,14 +8,13 @@ description = "A clock for e-ink displays like that in the Kindle DX Graphite"
 [dependencies]
 cairo-rs = { version = "0", features = [ "png" ], default-features = false }
 chrono = "0"
-png = "0"
-weathergov = { version = "0", git = "https://github.com/sameer/weathergov.git" }
 ssh2 = "0"
-rtnetlink = "0"
 clap = "2"
 log = "0"
 env_logger = "0"
-ipnetwork = "0"
+curl = "0"
+metar = "0"
+uom = "0"
 
 [profile.release]
 opt-level = 'z'  # Optimize for size.

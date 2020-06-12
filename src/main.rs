@@ -11,11 +11,13 @@ mod clock;
 mod network;
 mod render;
 mod ssh;
+mod weather;
 
 use audio::*;
 use clock::*;
 use render::*;
 use ssh::*;
+use weather::*;
 
 use std::env;
 use std::io::Write;
@@ -25,9 +27,11 @@ use std::net::Ipv4Addr;
 const WIDTH: usize = 1200;
 const HEIGHT: usize = 824;
 const DPI: f64 = 150.0;
+const FONT: &str = "Inter";
 
-const FONT: &str = "DejaVu Sans";
 const WEATHER_STATION: &str = "KTPA";
+type TemperatureUnits = uom::si::thermodynamic_temperature::degree_fahrenheit;
+type WindSpeedUnits = uom::si::velocity::mile_per_hour;
 
 const KINDLE_IP_ADDRESS: Ipv4Addr = Ipv4Addr::new(192, 168, 2, 2);
 const KINDLE_SSH_PORT: u16 = 22;
@@ -50,9 +54,14 @@ fn main() {
 
     let now = Local::now();
 
+    let current_metar_bytes = get_current_metar_data().expect("failed to get metar from weather.gov");
+    let current_metar_data = String::from_utf8(current_metar_bytes).expect("metar was not UTF-8");
+    let current_metar = parse_metar_data(&current_metar_data).expect("failed to parse metar data");
+
+
     let surf = create_surface().expect("failed to create cairo surface");
     let ctx = create_context(&surf);
-    draw_clock(&ctx, &now);
+    draw_clock(&ctx, &now, current_metar);
     let png = write_surface_to_png(&surf);
 
     if matches.is_present("debug") {
