@@ -34,3 +34,47 @@ pub fn parse_metar_data<'a>(data: &'a str) -> Result<Metar<'a>, MetarError<'a>> 
         Metar::parse(data)
     }
 }
+
+#[derive(Default)]
+pub struct Remark {
+    observation_type: Option<ObservationType>
+}
+
+pub enum ObservationType {
+    AutomatedWithoutPrecipitationDiscriminator,
+    AutomatedWithPrecipitationDiscriminator
+}
+
+pub struct DirectionalVector {
+    distance: Option<Distance>,
+    direction: Direction
+}
+
+pub enum Distance {
+    Distant
+}
+
+pub enum Direction {
+    N,
+    W,
+    S,
+    E,
+    NW,
+    NE,
+    SW,
+    SE
+}
+
+impl Remark {
+    pub fn parse_from_str(raw: &str) -> Self {
+        let mut remark = Remark::default();
+        for term in raw.split_whitespace() {
+            if term == "AO2" {
+                remark.observation_type = Some(ObservationType::AutomatedWithPrecipitationDiscriminator);
+            } else if term == "AO1" {
+                remark.observation_type = Some(ObservationType::AutomatedWithoutPrecipitationDiscriminator);
+            }
+        }
+        remark
+    }
+}

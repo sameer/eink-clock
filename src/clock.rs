@@ -1,6 +1,6 @@
 use cairo::Context;
 use chrono::prelude::*;
-use metar::{Data, Metar, SpeedUnit, Clouds, CloudType, CloudLayer};
+use metar::{CloudLayer, CloudType, Clouds, Data, Metar, SpeedUnit, WeatherCondition, WeatherIntensity};
 
 use crate::render::set_font;
 use crate::{TemperatureUnits, WindSpeedUnits, DPI, FONT, HEIGHT, WIDTH};
@@ -45,7 +45,10 @@ fn draw_current_weather(ctx: &Context, current_metar: Metar<'_>) {
         use uom::si::f32::ThermodynamicTemperature;
         use uom::si::thermodynamic_temperature::degree_celsius;
         let temp_celsius = ThermodynamicTemperature::new::<degree_celsius>(*temp as f32);
-        concise_observation += &format!("{:.1}", temp_celsius.into_format_args(TemperatureUnits, DisplayStyle::Abbreviation));
+        concise_observation += &format!(
+            "{:.1}",
+            temp_celsius.into_format_args(TemperatureUnits, DisplayStyle::Abbreviation)
+        );
     }
     if let Data::Known(wind_speed) = &current_metar.wind.speed {
         if let Data::Known(_) = &current_metar.temperature {
@@ -55,40 +58,70 @@ fn draw_current_weather(ctx: &Context, current_metar: Metar<'_>) {
         use uom::si::velocity::{knot, meter_per_second};
         let velocity = match wind_speed.unit {
             SpeedUnit::Knot => Velocity::new::<knot>(wind_speed.speed as f32),
-            SpeedUnit::MetresPerSecond => Velocity::new::<meter_per_second>(wind_speed.speed as f32)
+            SpeedUnit::MetresPerSecond => {
+                Velocity::new::<meter_per_second>(wind_speed.speed as f32)
+            }
         };
-        concise_observation += &format!("{:.1}", velocity.into_format_args(WindSpeedUnits, DisplayStyle::Abbreviation));
+        concise_observation += &format!(
+            "{:.1}",
+            velocity.into_format_args(WindSpeedUnits, DisplayStyle::Abbreviation)
+        );
     }
     eprintln!("{:?}", current_metar);
 
     set_font(ctx, FONT);
     ctx.set_font_size(DPI * 0.75);
     let extents = ctx.text_extents(&concise_observation);
-    ctx.move_to((WIDTH as f64 - extents.width) / 2., HEIGHT as f64 / 4.);
+    ctx.move_to((WIDTH as f64 - extents.width) / 2., HEIGHT as f64 / 4f64);
     ctx.show_text(&concise_observation);
 
-    let weather_emoji = if let Data::Known(Clouds::CloudLayers) = current_metar.clouds {
-        "\u{263c}"
-    } else if let Data::Known(Clouds::SkyClear) =  current_metar.clouds {
-        "\u{263c}" // sunny
-    } else {
-        "\u{003f}"
+    let weather_emojis = match current_metar.clouds {
+        Data::Known(Clouds::SkyClear)
+        | Data::Known(Clouds::NoCloudDetected)
+        | Data::Known(Clouds::NoSignificantCloud) => {
+            "\u{263c}".to_owned() // sunny
+        }
+        Data::Known(Clouds::CloudLayers) => {
+            let mut emojis = String::new();
+            for weather in current_metar.weather {
+                emojis += match weather.intensity {
+                    WeatherIntensity::Heavy => "\u{2795}",
+                    WeatherIntensity::Light => "\u{2796}",
+                    WeatherIntensity::Moderate => "~",
+                    WeatherIntensity::InVicinity => "\u{1F5FA}"
+                };
+                for condition in weather.conditions {
+                    use WeatherCondition::*;
+                    emojis += match condition {
+                        Rain | Drizzle | Showers => "\u{1F327}",
+                        Snow | SnowGrains => "\u{1F328}",
+                        Blowing | Squall => "\u{1F32C}",
+                        Smoke => "\u{1F32C}\u{1F6AC}",
+                        Thunderstorm => "\u{26C8}",
+                        Freezing => "\u{1F976}",
+                        IceCrystals | IcePellets | Hail | SnowPelletsOrSmallHail => "\u{1F9CA}",
+                        Fog | Haze => "\u{1F32B}",
+                        Mist | Spray => "\u{1F32B}\u{1F4A7}",
+                        VolcanicAsh => "\u{E08D}",
+                        Sand | Dust | WidespreadDust => "\u{1F3DC}",
+                        Duststorm | Sandstorm | FunnelCloud => "\u{1F32A}",
+                        Partial | Shallow => "¼",
+                        LowDrifting => "\u{2601}",
+                        UnknownPrecipitation | Patches => "\u{003F}"
+                    }
+                }
+            }
+            if let Some(remarks) = current_metar.remarks {
+                // TODO: parse remarks for US weather
+            }
+            emojis
+        }
+        _ => "\u{003F}".to_owned(),
     };
 
-    // let weather_emoji = match weather.as_str() {
-    //     "Thunderstorm" => "⛈️",
-    //     "Thunderstorm in Vicinity" => "🌦️",
-    //     "Overcast" => "☁️",
-    //     "Mostly Cloudy" => "🌥️",
-    //     "Partly Cloudy" => "⛅",
-    //     "A Few Clouds" => "🌤️",
-    //     "Fair" => "☀️",
-    //     other => other,
-    // }
-    // .to_owned();
-    // set_font(ctx, "OpenMoji-f");
+    set_font(ctx, "OpenMoji");
     ctx.set_font_size(DPI * 1.5);
-    let extents = ctx.text_extents(&weather_emoji);
+    let extents = ctx.text_extents(&weather_emojis);
     ctx.move_to((WIDTH as f64 - extents.width) / 2., HEIGHT as f64 * 0.6);
-    ctx.show_text(&weather_emoji);
+    ctx.show_text(&weather_emojis);
 }
