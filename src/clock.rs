@@ -166,6 +166,7 @@ fn draw_current_weather(ctx: &Context, current_metar: Metar<'_>) {
         }
     }
     set_font(ctx, EMOJI_FONT);
+    ctx.set_source_rgb(0.0, 0.0, 0.0);
     let mut initial_scale = DPI * 1.5;
 
     let mut extents;
