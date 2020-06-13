@@ -3,7 +3,7 @@ use chrono::prelude::*;
 use metar::{CloudLayer, CloudType, Clouds, Data, Metar, SpeedUnit, WeatherCondition, WeatherIntensity};
 
 use crate::render::set_font;
-use crate::{TemperatureUnits, WindSpeedUnits, DPI, FONT, HEIGHT, WIDTH};
+use crate::{TemperatureUnits, WindSpeedUnits, DPI, FONT, HEIGHT, WIDTH, EMOJI_FONT};
 
 pub fn draw_clock(ctx: &Context, date_time: &DateTime<Local>, current_metar: Metar<'_>) {
     ctx.set_source_rgb(1.0, 1.0, 1.0);
@@ -67,7 +67,6 @@ fn draw_current_weather(ctx: &Context, current_metar: Metar<'_>) {
             velocity.into_format_args(WindSpeedUnits, DisplayStyle::Abbreviation)
         );
     }
-    eprintln!("{:?}", current_metar);
 
     set_font(ctx, FONT);
     ctx.set_font_size(DPI * 0.75);
@@ -119,7 +118,7 @@ fn draw_current_weather(ctx: &Context, current_metar: Metar<'_>) {
         _ => "\u{003F}".to_owned(),
     };
 
-    set_font(ctx, "OpenMoji");
+    set_font(ctx, EMOJI_FONT);
     ctx.set_font_size(DPI * 1.5);
     let extents = ctx.text_extents(&weather_emojis);
     ctx.move_to((WIDTH as f64 - extents.width) / 2., HEIGHT as f64 * 0.6);

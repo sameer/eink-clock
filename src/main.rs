@@ -28,6 +28,7 @@ const WIDTH: usize = 1200;
 const HEIGHT: usize = 824;
 const DPI: f64 = 150.0;
 const FONT: &str = "Inter";
+const EMOJI_FONT: &str = "OpenMoji";
 
 const WEATHER_STATION: &str = "KTPA";
 const TemperatureUnits: uom::si::thermodynamic_temperature::degree_fahrenheit =

@@ -7,7 +7,6 @@ use crate::WEATHER_STATION;
 
 pub fn get_current_metar_data() -> Result<Vec<u8>, Error> {
     let url = format!("https://w1.weather.gov/data/METAR/{}.1.txt", WEATHER_STATION);
-    eprintln!("{}", url);
     let mut easy = Easy::new();
     easy.url(&url)?;
     let mut list = List::new();

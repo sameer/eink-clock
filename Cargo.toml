@@ -12,7 +12,7 @@ ssh2 = "0"
 clap = "2"
 log = "0"
 env_logger = "0"
-curl = "0"
+curl = { version = "0", features = [ "static-curl", "static-ssl" ] }
 metar = "0"
 uom = "0"
 
