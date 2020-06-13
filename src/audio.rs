@@ -2,6 +2,15 @@ use ssh2::Session;
 
 use crate::ssh::{amixer_set_master_volume, aplay_audio_nonblocking};
 
+macro_rules! hours {
+    ($session: ident, $hour12: ident, $($hour: expr,)*) => {
+        match $hour12 {
+            $($hour => aplay_audio_nonblocking($session, include_bytes!(concat!("../audio/", stringify!($hour), ".wav"))),)*
+            _ => Ok(())
+        }
+    };
+}
+
 pub fn play_audio_for_hour(
     session: &mut Session,
     hour24: u32,
@@ -10,20 +19,5 @@ pub fn play_audio_for_hour(
     let volume = if hour24 < 7 || hour12 > 22 { 0 } else { 20 };
 
     amixer_set_master_volume(session, volume)?;
-
-    match hour12 {
-        1 => aplay_audio_nonblocking(session, include_bytes!("../audio/1.wav")),
-        2 => aplay_audio_nonblocking(session, include_bytes!("../audio/2.wav")),
-        3 => aplay_audio_nonblocking(session, include_bytes!("../audio/3.wav")),
-        4 => aplay_audio_nonblocking(session, include_bytes!("../audio/4.wav")),
-        5 => aplay_audio_nonblocking(session, include_bytes!("../audio/5.wav")),
-        6 => aplay_audio_nonblocking(session, include_bytes!("../audio/6.wav")),
-        7 => aplay_audio_nonblocking(session, include_bytes!("../audio/7.wav")),
-        8 => aplay_audio_nonblocking(session, include_bytes!("../audio/8.wav")),
-        9 => aplay_audio_nonblocking(session, include_bytes!("../audio/9.wav")),
-        10 => aplay_audio_nonblocking(session, include_bytes!("../audio/10.wav")),
-        11 => aplay_audio_nonblocking(session, include_bytes!("../audio/11.wav")),
-        12 => aplay_audio_nonblocking(session, include_bytes!("../audio/12.wav")),
-        _ => Ok(()),
-    }
+    hours!(session, hour12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,)
 }

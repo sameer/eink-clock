@@ -6,6 +6,7 @@ extern crate log;
 
 use chrono::prelude::*;
 
+mod art;
 mod audio;
 mod clock;
 mod network;
@@ -31,9 +32,9 @@ const FONT: &str = "Inter";
 const EMOJI_FONT: &str = "OpenMoji";
 
 const WEATHER_STATION: &str = "KTPA";
-const TemperatureUnits: uom::si::thermodynamic_temperature::degree_fahrenheit =
+const TEMPERATURE_UNITS: uom::si::thermodynamic_temperature::degree_fahrenheit =
     uom::si::thermodynamic_temperature::degree_fahrenheit;
-const WindSpeedUnits: uom::si::velocity::mile_per_hour = uom::si::velocity::mile_per_hour;
+const WIND_SPEED_UNITS: uom::si::velocity::mile_per_hour = uom::si::velocity::mile_per_hour;
 
 const KINDLE_IP_ADDRESS: Ipv4Addr = Ipv4Addr::new(192, 168, 2, 2);
 const KINDLE_SSH_PORT: u16 = 22;
@@ -43,14 +44,14 @@ const KINDLE_CONNECT_TIMEOUT: u64 = 1000;
 
 fn main() {
     if env::var("RUST_LOG").is_err() {
-        env::set_var("RUST_LOG", "eink-clock=info")
+        env::set_var("RUST_LOG", "eink_clock=info")
     }
     env_logger::init();
     let matches = clap_app!(svg2gcode =>
         (version: crate_version!())
         (author: crate_authors!())
         (about: crate_description!())
-        (@arg debug: --debug "To debug locally, eink-clock will simply output the SVG for the current time")
+        (@arg debug: --debug "To debug locally, eink-clock will simply output the PNG for the current time")
     )
     .get_matches();
 
@@ -67,7 +68,7 @@ fn main() {
     let png = write_surface_to_png(&surf);
 
     if matches.is_present("debug") {
-        info!("In debug mode, printing svg to stdout");
+        info!("In debug mode, printing png to stdout");
         std::io::stdout().write_all(&png).unwrap();
         return;
     }

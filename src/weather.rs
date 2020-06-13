@@ -1,4 +1,7 @@
-use curl::{easy::{Easy, List}, Error};
+use curl::{
+    easy::{Easy, List},
+    Error,
+};
 use metar::{Metar, MetarError};
 
 use std::io::Write;
@@ -6,11 +9,17 @@ use std::io::Write;
 use crate::WEATHER_STATION;
 
 pub fn get_current_metar_data() -> Result<Vec<u8>, Error> {
-    let url = format!("https://w1.weather.gov/data/METAR/{}.1.txt", WEATHER_STATION);
+    let url = format!(
+        "https://w1.weather.gov/data/METAR/{}.1.txt",
+        WEATHER_STATION
+    );
     let mut easy = Easy::new();
     easy.url(&url)?;
     let mut list = List::new();
-    list.append(&format!("User-Agent: curl/{}", curl::Version::get().version()))?;
+    list.append(&format!(
+        "User-Agent: curl/{}",
+        curl::Version::get().version()
+    ))?;
     easy.http_headers(list)?;
     let mut dst = vec![];
     {
@@ -36,21 +45,21 @@ pub fn parse_metar_data<'a>(data: &'a str) -> Result<Metar<'a>, MetarError<'a>> 
 
 #[derive(Default)]
 pub struct Remark {
-    observation_type: Option<ObservationType>
+    observation_type: Option<ObservationType>,
 }
 
 pub enum ObservationType {
     AutomatedWithoutPrecipitationDiscriminator,
-    AutomatedWithPrecipitationDiscriminator
+    AutomatedWithPrecipitationDiscriminator,
 }
 
 pub struct DirectionalVector {
     distance: Option<Distance>,
-    direction: Direction
+    direction: Direction,
 }
 
 pub enum Distance {
-    Distant
+    Distant,
 }
 
 pub enum Direction {
@@ -61,7 +70,7 @@ pub enum Direction {
     NW,
     NE,
     SW,
-    SE
+    SE,
 }
 
 impl Remark {
@@ -69,9 +78,11 @@ impl Remark {
         let mut remark = Remark::default();
         for term in raw.split_whitespace() {
             if term == "AO2" {
-                remark.observation_type = Some(ObservationType::AutomatedWithPrecipitationDiscriminator);
+                remark.observation_type =
+                    Some(ObservationType::AutomatedWithPrecipitationDiscriminator);
             } else if term == "AO1" {
-                remark.observation_type = Some(ObservationType::AutomatedWithoutPrecipitationDiscriminator);
+                remark.observation_type =
+                    Some(ObservationType::AutomatedWithoutPrecipitationDiscriminator);
             }
         }
         remark
