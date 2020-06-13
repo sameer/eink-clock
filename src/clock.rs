@@ -17,6 +17,7 @@ pub fn draw_clock(ctx: &Context, date_time: &DateTime<Local>, current_metar: Met
     draw_date(ctx, date_time.date());
     draw_time(ctx, &date_time);
     draw_current_weather(ctx, current_metar);
+    draw_art(ctx, &date_time);
 }
 
 fn draw_date(ctx: &Context, date: Date<Local>) {
@@ -31,8 +32,8 @@ fn draw_date(ctx: &Context, date: Date<Local>) {
 }
 
 fn draw_time(ctx: &Context, date_time: &DateTime<Local>) {
-    let (_, hour) = date_time.hour12();
-    let time = format!("{}{}", hour, date_time.format(":%M %p"));
+    let (_, hour12) = date_time.hour12();
+    let time = format!("{}{}", hour12, date_time.format(":%M %p"));
 
     set_font(ctx, FONT);
     ctx.set_font_size(DPI * 1.5);
@@ -128,4 +129,11 @@ fn draw_current_weather(ctx: &Context, current_metar: Metar<'_>) {
     let extents = ctx.text_extents(&weather_emojis);
     ctx.move_to((WIDTH as f64 - extents.width) / 2., HEIGHT as f64 * 0.6);
     ctx.show_text(&weather_emojis);
+}
+
+fn draw_art(ctx: &Context, date_time: &DateTime<Local>) {
+    let (_, hour12) = date_time.hour12();
+    let surface = crate::art::get_surface_for_hour12(hour12);
+    ctx.set_source_surface(&surface, WIDTH as f64 - surface.get_width() as f64, HEIGHT as f64 / 2.0 - surface.get_height() as f64 / 2.0);
+    ctx.paint();
 }
