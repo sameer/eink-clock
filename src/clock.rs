@@ -38,15 +38,14 @@ fn draw_current_weather(ctx: &Context, current_metar: Metar<'_>) {
     //     return;
     // }
     // let weather = current_observation.weather.unwrap();
+    use uom::fmt::DisplayStyle;
 
     let mut concise_observation = String::new();
     if let Data::Known(temp) = &current_metar.temperature {
         use uom::si::f32::ThermodynamicTemperature;
         use uom::si::thermodynamic_temperature::degree_celsius;
         let temp_celsius = ThermodynamicTemperature::new::<degree_celsius>(*temp as f32);
-        let temp_fahrenheit = temp_celsius.get::<TemperatureUnits>();
-        concise_observation += &format!("{:.1}", temp_fahrenheit);
-        concise_observation += "°F";
+        concise_observation += &format!("{:.1}", temp_celsius.into_format_args(TemperatureUnits, DisplayStyle::Abbreviation));
     }
     if let Data::Known(wind_speed) = &current_metar.wind.speed {
         if let Data::Known(_) = &current_metar.temperature {
@@ -55,11 +54,10 @@ fn draw_current_weather(ctx: &Context, current_metar: Metar<'_>) {
         use uom::si::f32::Velocity;
         use uom::si::velocity::{knot, meter_per_second};
         let velocity = match wind_speed.unit {
-            SpeedUnit::Knot => Velocity::new::<knot>(wind_speed.speed as f32).get::<WindSpeedUnits>(),
-            SpeedUnit::MetresPerSecond => Velocity::new::<meter_per_second>(wind_speed.speed as f32).get::<WindSpeedUnits>()
+            SpeedUnit::Knot => Velocity::new::<knot>(wind_speed.speed as f32),
+            SpeedUnit::MetresPerSecond => Velocity::new::<meter_per_second>(wind_speed.speed as f32)
         };
-        concise_observation += &format!("{:.1}", velocity);
-        concise_observation += " mph";
+        concise_observation += &format!("{:.1}", velocity.into_format_args(WindSpeedUnits, DisplayStyle::Abbreviation));
     }
     eprintln!("{:?}", current_metar);
 
