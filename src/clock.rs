@@ -29,7 +29,7 @@ fn draw_time(ctx: &Context, date_time: &DateTime<Local>) {
     set_font(ctx, FONT);
     ctx.set_font_size(DPI * 1.5);
     let extents = ctx.text_extents(&time);
-    ctx.move_to((WIDTH as f64 - extents.width) / 2.0, HEIGHT as f64);
+    ctx.move_to((WIDTH as f64 - extents.width) / 2.0, HEIGHT as f64 + extents.height + extents.y_bearing);
     ctx.show_text(&time);
 }
 
