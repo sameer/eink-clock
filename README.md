@@ -9,7 +9,6 @@ A clock for e-ink displays like that in the [Kindle DX Graphite](https://en.wiki
 * Raspberry Pi Zero W or other ARM device of your choice with networking capabilities
 * [jailbroken Kindle](https://wiki.mobileread.com/wiki/Kindle_Hacks_Information#Jail_break_JB) with usbnetwork
 
-
 ### Software
 
 #### Prerequisites
@@ -24,10 +23,7 @@ First get the necessary dependencies
 
 ###### ArchLinux
 ```bash
-# harfbuzz library, used for text rendering:
-pacman -S harfbuzz
-# ssh to kindle root without any credentials
-pacman -S sshpass
+pacman -S cairo openssl
 ```
 
 Now build.
@@ -48,6 +44,10 @@ Build
 OPENSSL_DIR=/usr/arm-linux-gnueabihf/usr/ HARFBUZZ_SYS_NO_PKG_CONFIG=1 cargo build --release --target arm-unknown-linux-gnueabihf
 ```
 
+#### Configuration
+
+Check the parameters in `src/main.rs` and tailor them to your situation. Reach out to me if you have questions.
+
 #### Deploying
 
 If you cross-compiled, transfer the project folder to the device.
@@ -58,9 +58,11 @@ To network with a Kindle that has usbnetwork enabled and shows up as usb0 in `ip
 
 ###### Automatically
 
-Work in progress
+`eink-clock` will automatically check the network setup every time it's run.
 
 ###### Manually
+
+Not needed, but this is essentially what `eink-clock` does.
 
 ```bash
 ip a add 192.168.2.1/24 dev usb0

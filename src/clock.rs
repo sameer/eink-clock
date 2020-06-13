@@ -87,20 +87,22 @@ fn draw_current_weather(ctx: &Context, current_metar: Metar<'_>) {
     ctx.show_text(&concise_observation);
     debug!("{:?}", current_metar);
 
-    let mut weather_emojis = match current_metar.clouds {
+    let mut weather_emojis = match &current_metar.clouds {
         Data::Known(Clouds::SkyClear)
         | Data::Known(Clouds::NoCloudDetected)
         | Data::Known(Clouds::NoSignificantCloud) => {
             "\u{263c}".to_owned() // sunny
         }
-        Data::Known(Clouds::CloudLayers) => "\u{2753}".to_owned(),
+        Data::Known(Clouds::CloudLayers) => {
+            "".to_owned()
+        }
         _ => "\u{2753}".to_owned(),
     };
     for weather in &current_metar.weather {
         weather_emojis += match weather.intensity {
             WeatherIntensity::Heavy => "\u{2795}",
             WeatherIntensity::Light => "\u{2796}",
-            WeatherIntensity::Moderate => "~",
+            WeatherIntensity::Moderate => "\u{FE0F}",
             WeatherIntensity::InVicinity => "\u{1F5FA}",
         };
         for condition in &weather.conditions {

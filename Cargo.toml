@@ -16,6 +16,10 @@ curl = { version = "0", features = [ "static-curl", "static-ssl" ] }
 metar = "0"
 uom = "0"
 png = "0"
+rtnetlink = "0"
+ipnetwork = "0"
+futures = "0.3"
+tokio = { version = "0.2", features = ["macros", "rt-core"] }
 
 [profile.release]
 opt-level = 'z'  # Optimize for size.

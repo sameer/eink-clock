@@ -4,12 +4,12 @@ use crate::{
 
 use ssh2::Session;
 use std::io::Write;
-use std::net::{SocketAddr, SocketAddrV4, TcpStream};
+use std::net::{SocketAddr, TcpStream};
 use std::path::Path;
 use std::time::Duration;
 
 pub fn open_tcp_connection() -> std::io::Result<TcpStream> {
-    let address = SocketAddr::V4(SocketAddrV4::new(KINDLE_IP_ADDRESS, KINDLE_SSH_PORT));
+    let address = SocketAddr::new(KINDLE_IP_ADDRESS, KINDLE_SSH_PORT);
     TcpStream::connect_timeout(&address, Duration::from_millis(KINDLE_CONNECT_TIMEOUT))
 }
 
