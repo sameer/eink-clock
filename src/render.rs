@@ -22,7 +22,29 @@ pub fn set_font(ctx: &Context, font_name: &str) {
 }
 
 pub fn write_surface_to_png(surf: &ImageSurface) -> Vec<u8> {
-    let mut png = Vec::with_capacity(WIDTH * HEIGHT * 3);
-    surf.write_to_png(&mut png).unwrap();
-    png
+    let mut png_data = Vec::with_capacity(WIDTH * HEIGHT * 3);
+    surf.write_to_png(&mut png_data).unwrap();
+    let mut png_data_slice = png_data.as_slice();
+    let mut grayscale_buf = vec![0; WIDTH * HEIGHT];
+
+    {
+        let decoder = png::Decoder::new(&mut png_data_slice);
+        let (info, mut reader) = decoder.read_info().unwrap();
+        let mut buf = vec![0; info.buffer_size()];
+        reader.next_frame(&mut buf).unwrap();
+        for i in 0..(WIDTH * HEIGHT) {
+            let rgb = &buf[3 * i..3 * i + 3];
+            grayscale_buf[i] = ((rgb[0] as u16 + rgb[1] as u16 + rgb[2] as u16) / 3) as u8;
+        }
+    }
+
+    let mut grayscale_png = Vec::with_capacity(WIDTH * HEIGHT);
+    {
+        let mut encoder = png::Encoder::new(&mut grayscale_png, HEIGHT as u32, WIDTH as u32);
+        encoder.set_color(png::ColorType::Grayscale);
+        encoder.set_depth(png::BitDepth::Eight);
+        let mut writer = encoder.write_header().unwrap();
+        writer.write_image_data(&mut grayscale_buf).unwrap();
+    }
+    grayscale_png
 }
