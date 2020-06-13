@@ -27,6 +27,7 @@ pub fn get_name_for_hour12(hour12: u32) -> String {
         10 => "Flycatcher",
         11 => "Vireo",
         12 => "Great Horned Owl",
-        _ => ""
-    }.to_owned()
+        _ => "",
+    }
+    .to_owned()
 }

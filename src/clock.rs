@@ -83,7 +83,10 @@ fn draw_current_weather(ctx: &Context, current_metar: Metar<'_>) {
     set_font(ctx, FONT);
     ctx.set_font_size(DPI * 0.45);
     let extents = ctx.text_extents(&concise_observation);
-    ctx.move_to(WIDTH as f64 * 0.25 - extents.width * 0.5, HEIGHT as f64 - (extents.height + extents.y_bearing) * 0.5);
+    ctx.move_to(
+        WIDTH as f64 * 0.25 - extents.width * 0.5,
+        HEIGHT as f64 - (extents.height + extents.y_bearing) * 0.5,
+    );
     ctx.show_text(&concise_observation);
     debug!("{:?}", current_metar);
 
@@ -93,9 +96,7 @@ fn draw_current_weather(ctx: &Context, current_metar: Metar<'_>) {
         | Data::Known(Clouds::NoSignificantCloud) => {
             "\u{263c}".to_owned() // sunny
         }
-        Data::Known(Clouds::CloudLayers) => {
-            "".to_owned()
-        }
+        Data::Known(Clouds::CloudLayers) => "".to_owned(),
         _ => "\u{2753}".to_owned(),
     };
     for weather in &current_metar.weather {
@@ -130,7 +131,8 @@ fn draw_current_weather(ctx: &Context, current_metar: Metar<'_>) {
     let mut initial_scale = DPI * 1.5;
 
     let mut extents;
-    while { // Silly shrink to fit, I'm not sure how to do it the right way
+    while {
+        // Silly shrink to fit, I'm not sure how to do it the right way
         ctx.set_font_size(initial_scale);
         extents = ctx.text_extents(&weather_emojis);
         extents.width > WIDTH as f64 / 2.0
@@ -158,6 +160,9 @@ fn draw_art(ctx: &Context, date_time: &DateTime<Local>) {
     ctx.set_font_size(DPI * 0.25);
     let art_name = crate::art::get_name_for_hour12(hour12);
     let extents = ctx.text_extents(&art_name);
-    ctx.move_to(WIDTH as f64 * 0.75 - extents.width * 0.5, HEIGHT as f64 - (extents.height + extents.y_bearing));
+    ctx.move_to(
+        WIDTH as f64 * 0.75 - extents.width * 0.5,
+        HEIGHT as f64 - (extents.height + extents.y_bearing),
+    );
     ctx.show_text(&art_name);
 }
