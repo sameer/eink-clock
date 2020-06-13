@@ -2,6 +2,8 @@
 
 A clock for e-ink displays like that in the [Kindle DX Graphite](https://en.wikipedia.org/wiki/Amazon_Kindle#Kindle_DX_Graphite).
 
+![Demo of display](demo.png)
+
 ## Setup
 
 ### Physical requirements
@@ -78,7 +80,7 @@ On the Kindle, make sure you've enabled auto-start for usbnetwork just in case t
 ```bash
 ssh root@192.168.2.2
 ls /mnt/us/usbnet/
-# If there is a file DISABLED_auto, rename it to auto
+# If there is a DISABLED_auto file, rename it to auto
 # Beware that this means networking will always be enabled at startup
 # You cannot connect the Kindle as a USB storage device again until you rename auto to DISABLED_auto
 mv /mnt/us/usbnet/DISABLED_auto /mnt/us/usbnet/auto

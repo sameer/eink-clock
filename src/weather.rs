@@ -10,7 +10,7 @@ use crate::WEATHER_STATION;
 
 pub fn get_current_metar_data() -> Result<Vec<u8>, Error> {
     let url = format!(
-        "https://w1.weather.gov/data/METAR/{}.1.txt",
+        "https://www.aviationweather.gov/adds/dataserver_current/httpparam?dataSource=metars&requestType=retrieve&format=xml&hoursBeforeNow=3&mostRecent=true&stationString={}",
         WEATHER_STATION
     );
     let mut easy = Easy::new();
@@ -34,10 +34,12 @@ pub fn get_current_metar_data() -> Result<Vec<u8>, Error> {
 }
 
 pub fn parse_metar_data<'a>(data: &'a str) -> Result<Metar<'a>, MetarError<'a>> {
-    const SKIP_START: &str = "METAR ";
+    const SKIP_START: &str = "<raw_text>";
+    const SKIP_END: &str = "</raw_text>";
     let metar_start = data.find(SKIP_START);
+    let metar_end = data.find(SKIP_END).unwrap_or(data.len());
     if let Some(index) = metar_start {
-        Metar::parse(&data[index + SKIP_START.len()..])
+        Metar::parse(&data[index + SKIP_START.len()..metar_end])
     } else {
         Metar::parse(data)
     }

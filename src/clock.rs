@@ -1,4 +1,4 @@
-use cairo::{Context, TextExtents};
+use cairo::{Context, Gradient, LinearGradient, TextExtents};
 use chrono::prelude::*;
 use metar::{
     CloudLayer, CloudType, Clouds, Data, Metar, SpeedUnit, WeatherCondition, WeatherIntensity,
@@ -90,20 +90,58 @@ fn draw_current_weather(ctx: &Context, current_metar: Metar<'_>) {
     ctx.show_text(&concise_observation);
     debug!("{:?}", current_metar);
 
-    let mut weather_emojis = match &current_metar.clouds {
+    let mut weather_emojis: String = match &current_metar.clouds {
         Data::Known(Clouds::SkyClear)
         | Data::Known(Clouds::NoCloudDetected)
         | Data::Known(Clouds::NoSignificantCloud) => {
             "\u{263c}".to_owned() // sunny
         }
-        Data::Known(Clouds::CloudLayers) => "".to_owned(),
+        Data::Known(Clouds::CloudLayers) => {
+            let gradient_width = WIDTH as f64 / 16.;
+            let gradient_height = HEIGHT as f64 / 2.;
+            let gradient_x = WIDTH as f64 / 2.;
+            let gradient_y = HEIGHT as f64 / 2.;
+            let mut gradient = LinearGradient::new(
+                gradient_x,
+                gradient_y + gradient_height,
+                gradient_x,
+                gradient_y,
+            );
+
+            let layers: Vec<(u8, u32)> = current_metar
+                .cloud_layers
+                .iter()
+                .filter_map(|layer| {
+                    use metar::CloudLayer::*;
+                    match layer {
+                        Few(_, Some(height)) => Some((1, *height)),
+                        Scattered(_, Some(height)) => Some((3, *height)),
+                        Broken(_, Some(height)) => Some((5, *height)),
+                        Overcast(_, Some(height)) => Some((7, *height)),
+                        _ => None,
+                    }
+                })
+                // Normally cannot see clouds above 20,000 feet
+                .filter(|layer| layer.1 < 200)
+                .collect();
+            let max_height = layers.iter().max_by_key(|l| l.1).map(|l| l.1).unwrap_or(0);
+            gradient.add_color_stop_rgb(0.0, 1.0, 1.0, 1.0);
+            for layer in layers {
+                let gray_level = layer.0 as f64 / 8.;
+                gradient.add_color_stop_rgb(layer.1 as f64 / max_height as f64, gray_level, gray_level, gray_level);
+            }
+            ctx.set_source(&gradient);
+            ctx.rectangle(gradient_x, gradient_y, gradient_width, gradient_height);
+            ctx.fill();
+            "".to_owned()
+        }
         _ => "\u{2753}".to_owned(),
     };
     for weather in &current_metar.weather {
         weather_emojis += match weather.intensity {
             WeatherIntensity::Heavy => "\u{2795}",
             WeatherIntensity::Light => "\u{2796}",
-            WeatherIntensity::Moderate => "\u{FE0F}",
+            WeatherIntensity::Moderate => "\u{3030}",
             WeatherIntensity::InVicinity => "\u{1F5FA}",
         };
         for condition in &weather.conditions {
