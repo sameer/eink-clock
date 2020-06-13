@@ -2,7 +2,7 @@ use futures::stream::TryStreamExt;
 use ipnetwork::IpNetwork;
 use rtnetlink::{new_connection, Error, Handle};
 
-use crate::{KINDLE_INTERFACE, KINDLE_IP_ADDRESS};
+use crate::{KINDLE_INTERFACE, PI_IP_ADDRESS};
 
 pub fn setup_if_down() -> Result<(), Error> {
     tokio::runtime::Builder::new()
@@ -13,8 +13,10 @@ pub fn setup_if_down() -> Result<(), Error> {
         .block_on(async {
             let (connection, handle, _) = new_connection().unwrap();
             tokio::spawn(connection);
-            let ip_network = IpNetwork::new(KINDLE_IP_ADDRESS, 24).unwrap();
-            add_address(&handle, ip_network).await?;
+            let ip_network = IpNetwork::new(PI_IP_ADDRESS, 24).unwrap();
+            if let Err(e) = add_address(&handle, ip_network).await {
+                warn!("{:?}", e);
+            };
             link_up(&handle, ip_network).await
         })
 }

@@ -36,6 +36,7 @@ const TEMPERATURE_UNITS: uom::si::thermodynamic_temperature::degree_fahrenheit =
     uom::si::thermodynamic_temperature::degree_fahrenheit;
 const WIND_SPEED_UNITS: uom::si::velocity::mile_per_hour = uom::si::velocity::mile_per_hour;
 
+const PI_IP_ADDRESS: IpAddr = IpAddr::V4(Ipv4Addr::new(192, 168, 2, 1));
 const KINDLE_IP_ADDRESS: IpAddr = IpAddr::V4(Ipv4Addr::new(192, 168, 2, 2));
 const KINDLE_SSH_PORT: u16 = 22;
 const KINDLE_USERNAME: &str = "root";
