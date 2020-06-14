@@ -17,9 +17,6 @@ pub fn draw_clock(ctx: &Context, date_time: &DateTime<Local>, current_metar: Met
     let date_extents = draw_date(ctx, date_time.date());
     draw_time(ctx, date_extents, &date_time);
     draw_current_weather(ctx, current_metar);
-    ctx.move_to(WIDTH as f64 / 2., HEIGHT as f64 / 2.);
-    ctx.line_to(WIDTH as f64 / 2., HEIGHT as f64);
-    ctx.stroke();
     draw_art(ctx, &date_time);
 }
 
@@ -101,12 +98,9 @@ fn draw_current_weather(ctx: &Context, current_metar: Metar<'_>) {
             let gradient_height = HEIGHT as f64 / 2.;
             let gradient_x = WIDTH as f64 / 2.;
             let gradient_y = HEIGHT as f64 / 2.;
-            let mut gradient = LinearGradient::new(
-                gradient_x,
-                gradient_y + gradient_height,
-                gradient_x,
-                gradient_y,
-            );
+            ctx.set_source_rgb(0.0, 0.0, 0.0);
+            ctx.rectangle(gradient_x, gradient_y, gradient_width, gradient_height);
+            ctx.fill();
 
             let layers: Vec<(u8, u32)> = current_metar
                 .cloud_layers
@@ -124,15 +118,39 @@ fn draw_current_weather(ctx: &Context, current_metar: Metar<'_>) {
                 // Normally cannot see clouds above 20,000 feet
                 .filter(|layer| layer.1 < 200)
                 .collect();
-            let max_height = layers.iter().max_by_key(|l| l.1).map(|l| l.1).unwrap_or(0);
-            gradient.add_color_stop_rgb(0.0, 1.0, 1.0, 1.0);
+            let max_height =
+                layers.iter().max_by_key(|l| l.1).map(|l| l.1).unwrap_or(0) as f64 * 1.05;
+            ctx.set_source_rgb(1.0, 1.0, 1.0);
+            set_font(ctx, FONT);
+            ctx.set_font_size(DPI * 0.1);
             for layer in layers {
-                let gray_level = layer.0 as f64 / 8.;
-                gradient.add_color_stop_rgb(layer.1 as f64 / max_height as f64, gray_level, gray_level, gray_level);
+                let level = layer.0 as f64 / 8.;
+                let text = format!("{} ft", layer.1 * 100);
+                let extents = ctx.text_extents(&text);
+                ctx.move_to(
+                    gradient_x + gradient_width / 2. - extents.width / 2. - extents.x_bearing,
+                    gradient_y + (1. - layer.1 as f64 / max_height) * gradient_height,
+                );
+                ctx.show_text(&text);
+                ctx.set_dash(
+                    &[
+                        gradient_width * 0.25 * level,
+                        gradient_width * 0.25 * (1. - level),
+                    ],
+                    0.,
+                );
+                ctx.set_line_width(5.);
+                ctx.move_to(
+                    gradient_x,
+                    gradient_y + (1. - layer.1 as f64 / max_height) * gradient_height + 2.0,
+                );
+                ctx.line_to(
+                    gradient_x + gradient_width,
+                    gradient_y + (1. - layer.1 as f64 / max_height) * gradient_height + 5.,
+                );
+                ctx.stroke();
             }
-            ctx.set_source(&gradient);
-            ctx.rectangle(gradient_x, gradient_y, gradient_width, gradient_height);
-            ctx.fill();
+
             "".to_owned()
         }
         _ => "\u{2753}".to_owned(),
