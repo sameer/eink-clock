@@ -1,8 +1,8 @@
 use crate::{HEIGHT, WIDTH};
 
-use cairo::{Context, FontFace, FontOptions, FontSlant, FontWeight, Format, ImageSurface, Status};
+use cairo::{Context, FontFace, FontOptions, FontSlant, FontWeight, Format, ImageSurface, Error};
 
-pub fn create_surface() -> Result<ImageSurface, Status> {
+pub fn create_surface() -> Result<ImageSurface, Error> {
     ImageSurface::create(Format::Rgb24, HEIGHT as i32, WIDTH as i32)
 }
 
