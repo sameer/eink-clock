@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@v1
       - uses: actions-rs/toolchain@v1
         with:
-          toolchain: stable
+          toolchain: stable-arm-unknown-linux-gnueabihf
           target: armv-unknown-linux-gnueabihf
           override: true
       - uses: actions-rs/cargo@v1
