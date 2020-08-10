@@ -58,6 +58,10 @@ fn main() {
     .get_matches();
 
     let now = Local::now();
+    // Reduce update frequency at night time
+    if now.minute() % 5 != 0 && night_time(&now) {
+        return;
+    }
 
     let current_metar_bytes =
         get_current_metar_data().expect("failed to get metar from weather.gov");
