@@ -43,7 +43,7 @@ If you have yay or other makepkg utilities, you will have to install it manually
 
 Build
 ```bash
-OPENSSL_DIR=/usr/arm-linux-gnueabihf/usr/ HARFBUZZ_SYS_NO_PKG_CONFIG=1 cargo build --release --target arm-unknown-linux-gnueabihf
+LIBZ_SYS_STATIC=1 PKG_CONFIG_ALLOW_CROSS=1 OPENSSL_DIR=/usr/arm-linux-gnueabihf/usr/ HARFBUZZ_SYS_NO_PKG_CONFIG=1 cargo build --release --target arm-unknown-linux-gnueabihf
 ```
 
 #### Configuration
