@@ -19,11 +19,6 @@ jobs:
           toolchain: stable
           target: arm-unknown-linux-gnueabihf
           override: true
-      - uses: actions-rs/cargo@v1
-        with:
-          use-cross: true
-          command: build
-          args: --target arm-unknown-linux-gnueabihf
       - name: Cache toolchain
         uses: actions/cache@v2
         with:
@@ -32,3 +27,8 @@ jobs:
             ~/.rustup/update-hashes
             ~/.rustup/settings.toml
           key: toolchain-${{ hashFiles('rust-toolchain') }}
+      - uses: actions-rs/cargo@v1
+        with:
+          use-cross: true
+          command: build
+          args: --target arm-unknown-linux-gnueabihf
