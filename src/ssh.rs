@@ -21,12 +21,19 @@ pub fn open_ssh_session(tcp_stream: TcpStream) -> Result<Session, ssh2::Error> {
     Ok(session)
 }
 
-pub fn eips_show_image(session: &mut Session, png: &[u8]) -> Result<(), ssh2::Error> {
+pub fn eips_show_image(
+    session: &mut Session,
+    png: &[u8],
+    clear_screen_before: bool,
+) -> Result<(), ssh2::Error> {
     let remote_path = Path::new("/dev/shm/out.png");
     let mut channel = session.scp_send(remote_path, 0o644, png.len() as u64, None)?;
     channel.write_all(png).expect("failed to write png");
     channel.close()?;
     let mut channel = session.channel_session()?;
+    if clear_screen_before {
+        channel.exec("/usr/sbin/eips -c")?;
+    }
     channel.exec("/usr/sbin/eips -g /dev/shm/out.png")?;
     channel.close()?;
     Ok(())
