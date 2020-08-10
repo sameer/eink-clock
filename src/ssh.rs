@@ -31,10 +31,10 @@ pub fn eips_show_image(
     channel.write_all(png).expect("failed to write png");
     channel.close()?;
     let mut channel = session.channel_session()?;
-    if clear_screen_before {
-        channel.exec("/usr/sbin/eips -c")?;
-    }
-    channel.exec("/usr/sbin/eips -g /dev/shm/out.png")?;
+    channel.exec(&format!(
+        "/usr/sbin/eips {} -g /dev/shm/out.png",
+        if clear_screen_before { "-f" } else { "" }
+    ))?;
     channel.close()?;
     Ok(())
 }
