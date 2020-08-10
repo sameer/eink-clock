@@ -24,3 +24,11 @@ jobs:
           use-cross: true
           command: build
           args: --target arm-unknown-linux-gnueabihf
+      - name: Cache toolchain
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.rustup/toolchains
+            ~/.rustup/update-hashes
+            ~/.rustup/settings.toml
+          key: toolchain-${{ hashFiles('rust-toolchain') }}
