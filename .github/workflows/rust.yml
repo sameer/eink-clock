@@ -23,4 +23,4 @@ jobs:
         with:
           use-cross: true
           command: build
-          args: --target armv-unknown-linux-gnueabihf
+          args: --target arm-unknown-linux-gnueabihf
