@@ -1,6 +1,6 @@
 use crate::{HEIGHT, WIDTH};
 
-use cairo::{Context, FontFace, FontOptions, FontSlant, FontWeight, Format, ImageSurface, Error};
+use cairo::{Context, Error, FontFace, FontOptions, FontSlant, FontWeight, Format, ImageSurface};
 
 pub fn create_surface() -> Result<ImageSurface, Error> {
     ImageSurface::create(Format::Rgb24, HEIGHT as i32, WIDTH as i32)
@@ -44,7 +44,7 @@ pub fn write_surface_to_png(surf: &ImageSurface) -> Vec<u8> {
         encoder.set_color(png::ColorType::Grayscale);
         encoder.set_depth(png::BitDepth::Eight);
         let mut writer = encoder.write_header().unwrap();
-        writer.write_image_data(&mut grayscale_buf).unwrap();
+        writer.write_image_data(&grayscale_buf).unwrap();
     }
     grayscale_png
 }

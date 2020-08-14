@@ -4,8 +4,6 @@ use curl::{
 };
 use metar::{Metar, MetarError};
 
-use std::io::Write;
-
 use crate::WEATHER_STATION;
 
 pub fn get_current_metar_data() -> Result<Vec<u8>, Error> {
@@ -33,11 +31,11 @@ pub fn get_current_metar_data() -> Result<Vec<u8>, Error> {
     Ok(dst)
 }
 
-pub fn parse_metar_data<'a>(data: &'a str) -> Result<Metar<'a>, MetarError<'a>> {
+pub fn parse_metar_data(data: &str) -> Result<Metar<'_>, MetarError<'_>> {
     const SKIP_START: &str = "<raw_text>";
     const SKIP_END: &str = "</raw_text>";
     let metar_start = data.find(SKIP_START);
-    let metar_end = data.find(SKIP_END).unwrap_or(data.len());
+    let metar_end = data.find(SKIP_END).unwrap_or_else(|| data.len());
     if let Some(index) = metar_start {
         Metar::parse(&data[index + SKIP_START.len()..metar_end])
     } else {

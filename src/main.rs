@@ -85,7 +85,8 @@ fn main() {
     let mut ssh_session =
         open_ssh_session(ssh_tcp_stream).expect("ssh authorized failed, is the password correct?");
 
-    eips_show_image(&mut ssh_session, &png, now.minute() == 0).expect("failed to send image to Kindle");
+    eips_show_image(&mut ssh_session, &png, now.minute() == 0)
+        .expect("failed to send image to Kindle");
 
     if now.minute() == 0 && !night_time(&now) {
         let (_, hour12) = now.hour12();

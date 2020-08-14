@@ -19,8 +19,7 @@ jobs:
           toolchain: stable
           target: arm-unknown-linux-gnueabihf
           override: true
-      - name: Cache toolchain
-        uses: actions/cache@v2
+      - uses: actions/cache@v2
         with:
           path: |
             ~/.rustup/toolchains
