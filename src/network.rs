@@ -14,9 +14,8 @@ pub fn setup_if_down() -> Result<(), Error> {
             let (connection, handle, _) = new_connection().unwrap();
             tokio::spawn(connection);
             let ip_network = IpNetwork::new(PI_IP_ADDRESS, 24).unwrap();
-            if let Err(e) = add_address(&handle, ip_network).await {
-                warn!("{:?}", e);
-            };
+            link_down(&handle, ip_network).await;
+            add_address(&handle, ip_network).await;
             link_up(&handle, ip_network).await
         })
 }
@@ -45,6 +44,18 @@ async fn link_up(handle: &Handle, ip: IpNetwork) -> Result<(), Error> {
         .execute();
     if let Some(link) = links.try_next().await? {
         handle.link().set(link.header.index).up().execute().await?
+    }
+    Ok(())
+}
+
+async fn link_down(handle: &Handle, ip: IpNetwork) -> Result<(), Error> {
+    let mut links = handle
+        .link()
+        .get()
+        .set_name_filter(KINDLE_INTERFACE.to_string())
+        .execute();
+    if let Some(link) = links.try_next().await? {
+        handle.link().set(link.header.index).down().execute().await?
     }
     Ok(())
 }
