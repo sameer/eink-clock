@@ -66,20 +66,19 @@ pub async fn main() {
     }
 
     let one_minute = Duration::minutes(1);
-    // want to delay until the next minute is reached
+    // want to delay kicking off interval until the next minute is reached
+    // not really possible with interval_at, currently
     let now = Local::now();
-    let start_of_next_minute =
-        now.duration_trunc(one_minute).unwrap() + one_minute + Duration::nanoseconds(1);
-    time::delay_for((start_of_next_minute - now).to_std().unwrap()).await;
+    time::delay_for((start_of_next_minute(&now) - now).to_std().unwrap()).await;
 
     let mut interval = time::interval(one_minute.to_std().unwrap());
     loop {
         let metar = get_metar().await;
-        // ^ precompute this
+        let next_minute = start_of_next_minute(&Local::now());
+        let png = generate_image(metar.as_ref().map(String::as_ref), &next_minute).await;
+        // ^ precompute
         interval.tick().await;
         debug!("timer went off");
-        let now = Local::now();
-        let png = generate_image(metar.as_ref().map(String::as_ref), &now).await;
         if debug {
             std::io::stdout().write_all(&png).unwrap();
             debug!("done writing image to stdout");
@@ -88,6 +87,11 @@ pub async fn main() {
             debug!("done updating clock")
         }
     }
+}
+
+fn start_of_next_minute(now: &DateTime<Local>) -> DateTime<Local> {
+    let one_minute = Duration::minutes(1);
+    now.duration_trunc(one_minute).unwrap() + one_minute
 }
 
 async fn update_clock(now: &DateTime<Local>, png: &Vec<u8>) {
