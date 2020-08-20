@@ -96,7 +96,9 @@ async fn update_clock(now: &DateTime<Local>, png: &Vec<u8>) {
         return;
     }
 
-    network::setup_if_down().expect("failed to set up network via rtnetlink");
+    network::setup_if_down()
+        .await
+        .expect("failed to set up network via rtnetlink");
 
     let ssh_tcp_stream = open_tcp_connection().expect("failed to connect to Kindle");
     let mut ssh_session =
