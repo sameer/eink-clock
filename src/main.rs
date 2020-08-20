@@ -72,8 +72,9 @@ pub async fn main() {
     time::delay_for((start_of_next_minute(&now) - now).to_std().unwrap()).await;
 
     let mut interval = time::interval(one_minute.to_std().unwrap());
+    let mut metar = None;
     loop {
-        let metar = get_metar().await;
+        metar = get_metar().await.or(metar);
         let next_minute = start_of_next_minute(&Local::now());
         let png = generate_image(metar.as_ref().map(String::as_ref), &next_minute).await;
         // ^ precompute
