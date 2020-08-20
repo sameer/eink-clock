@@ -86,14 +86,13 @@ ls /mnt/us/usbnet/
 mv /mnt/us/usbnet/DISABLED_auto /mnt/us/usbnet/auto
 ```
 
-##### Set up systemd files
+##### Set up systemd service file
 
-These are needed to run eink-clock once at the start of every minute.
+This needed to run eink-clock at startup
 
 ```bash
 ln -s /root/eink-clock/eink-clock.service /etc/systemd/system/
-ln -s /root/eink-clock/eink-clock.timer /etc/systemd/system/
-systemctl enable eink-clock.timer
+systemctl enable eink-clock.service
 systemctl start eink-clock.service
 ```
 
