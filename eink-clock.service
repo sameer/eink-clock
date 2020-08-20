@@ -1,9 +1,9 @@
 [Unit]
-Description=Create a clock screenshot and send it to the Kindle every minute
+Description=Create a clock png and send it to the Kindle every minute, playing hourly sounds
 Wants=network-online.target
 After=network-online.target
 
 [Service]
-Type=oneshot
+Type=simple
 ExecStart=/root/eink-clock/target/release/eink-clock
 WorkingDirectory=/root/eink-clock

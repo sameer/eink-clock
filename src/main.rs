@@ -5,6 +5,7 @@ extern crate clap;
 extern crate log;
 
 use chrono::prelude::*;
+use chrono::{Duration, DurationRound};
 
 mod art;
 mod audio;
@@ -23,6 +24,8 @@ use weather::*;
 use std::env;
 use std::io::Write;
 use std::net::{IpAddr, Ipv4Addr};
+
+use tokio::time;
 
 /// E Ink Pearl 1200x824 150 DPI 4-bit 16-level grayscale
 const WIDTH: usize = 1200;
@@ -44,7 +47,8 @@ const KINDLE_PASSWORD: &str = "root";
 const KINDLE_CONNECT_TIMEOUT: u64 = 1000;
 const KINDLE_INTERFACE: &str = "usb0";
 
-fn main() {
+#[tokio::main]
+pub async fn main() {
     if env::var("RUST_LOG").is_err() {
         env::set_var("RUST_LOG", "eink_clock=info")
     }
@@ -56,26 +60,39 @@ fn main() {
         (@arg debug: --debug "To debug locally, eink-clock will simply output the PNG for the current time")
     )
     .get_matches();
-
-    let now = Local::now();
-    // Reduce update frequency at night time
-    if now.minute() % 5 != 0 && night_time(&now) {
-        return;
+    let debug = matches.is_present("debug");
+    if debug {
+        info!("In debug mode, printing pngs to stdout");
     }
 
-    let current_metar_bytes =
-        get_current_metar_data().expect("failed to get metar from weather.gov");
-    let current_metar_data = String::from_utf8(current_metar_bytes).expect("metar was not UTF-8");
-    let current_metar = parse_metar_data(&current_metar_data).expect("failed to parse metar data");
+    let one_minute = Duration::minutes(1);
+    // want to delay until the next minute is reached
+    let now = Local::now();
+    let start_of_next_minute =
+        now.duration_trunc(one_minute).unwrap() + one_minute + Duration::nanoseconds(1);
+    time::delay_for((start_of_next_minute - now).to_std().unwrap()).await;
 
-    let surf = create_surface().expect("failed to create cairo surface");
-    let ctx = create_context(&surf);
-    draw_clock(&ctx, &now, current_metar);
-    let png = write_surface_to_png(&surf);
+    let mut interval = time::interval(one_minute.to_std().unwrap());
+    loop {
+        let metar = get_metar().await;
+        // ^ precompute this
+        interval.tick().await;
+        debug!("timer went off");
+        let now = Local::now();
+        let png = generate_image(metar.as_ref().map(String::as_ref), &now).await;
+        if debug {
+            std::io::stdout().write_all(&png).unwrap();
+            debug!("done writing image to stdout");
+        } else {
+            update_clock(&now, &png).await;
+            debug!("done updating clock")
+        }
+    }
+}
 
-    if matches.is_present("debug") {
-        info!("In debug mode, printing png to stdout");
-        std::io::stdout().write_all(&png).unwrap();
+async fn update_clock(now: &DateTime<Local>, png: &Vec<u8>) {
+    // Reduce update frequency at night time
+    if now.minute() % 5 != 0 && night_time(now) {
         return;
     }
 
@@ -85,7 +102,7 @@ fn main() {
     let mut ssh_session =
         open_ssh_session(ssh_tcp_stream).expect("ssh authorized failed, is the password correct?");
 
-    eips_show_image(&mut ssh_session, &png, now.minute() == 0)
+    eips_show_image(&mut ssh_session, png, now.minute() == 0)
         .expect("failed to send image to Kindle");
 
     if now.minute() == 0 && !night_time(&now) {
@@ -96,6 +113,27 @@ fn main() {
     ssh_session
         .disconnect(None, "done sending commands", None)
         .unwrap();
+}
+
+async fn get_metar() -> Option<String> {
+    get_current_metar_data()
+        .map_err(|err| error!("failed to get metar from aviationweather.gov: {}", err))
+        .ok()
+        .map(|metar_bytes| String::from_utf8_lossy(&metar_bytes).to_string())
+}
+
+async fn generate_image(current_metar_str: Option<&str>, now: &DateTime<Local>) -> Vec<u8> {
+    let current_metar = current_metar_str.and_then(|metar_str| {
+        parse_metar_data(metar_str)
+            .map_err(|err| error!("could not parse metar: {}", err))
+            .ok()
+    });
+    debug!("Current metar parsed {:?}", current_metar);
+    let surf = create_surface().expect("failed to create cairo surface");
+    let ctx = create_context(&surf);
+    draw_clock(&ctx, now, current_metar);
+    let png = write_surface_to_png(&surf);
+    png
 }
 
 fn night_time(now: &DateTime<Local>) -> bool {

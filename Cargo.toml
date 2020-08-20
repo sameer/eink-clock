@@ -19,7 +19,7 @@ png = "0"
 rtnetlink = "0"
 ipnetwork = "0"
 futures = "0.3"
-tokio = { version = "0.2", features = ["rt-core"] }
+tokio = { version = "0.2", features = ["rt-core", "time", "macros"] }
 
 [profile.release]
 opt-level = 'z'  # Optimize for size.
