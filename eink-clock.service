@@ -7,3 +7,6 @@ After=network-online.target
 Type=simple
 ExecStart=/root/eink-clock/target/release/eink-clock
 WorkingDirectory=/root/eink-clock
+
+[Install]
+WantedBy=multi-user.target
