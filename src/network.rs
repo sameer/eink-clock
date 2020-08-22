@@ -8,7 +8,6 @@ pub async fn setup_if_down() -> Result<(), Error> {
     let (connection, handle, _) = new_connection().unwrap();
     tokio::spawn(connection);
     let ip_network = IpNetwork::new(PI_IP_ADDRESS, 24).unwrap();
-    link_down(&handle, ip_network).await;
     add_address(&handle, ip_network).await;
     link_up(&handle, ip_network).await
 }

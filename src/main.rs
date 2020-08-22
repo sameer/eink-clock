@@ -73,6 +73,7 @@ pub async fn main() {
 
     let mut interval = time::interval(one_minute.to_std().unwrap());
     let mut metar = None;
+    interval.tick().await;
     loop {
         metar = get_metar().await.or(metar);
         let next_minute = start_of_next_minute(&Local::now());
