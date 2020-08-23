@@ -13,6 +13,7 @@ mod clock;
 mod network;
 mod render;
 mod ssh;
+mod usb;
 mod weather;
 
 use audio::*;
@@ -46,6 +47,8 @@ const KINDLE_USERNAME: &str = "root";
 const KINDLE_PASSWORD: &str = "root";
 const KINDLE_CONNECT_TIMEOUT: u64 = 1000;
 const KINDLE_INTERFACE: &str = "usb0";
+const KINDLE_VENDOR_ID: u16 = 0x0525;
+const KINDLE_PRODUCT_ID: u16 = 0xa4a2;
 
 #[tokio::main]
 pub async fn main() {
@@ -98,7 +101,7 @@ fn start_of_next_minute(now: &DateTime<Local>) -> DateTime<Local> {
 
 async fn update_clock(now: &DateTime<Local>, png: &Vec<u8>) {
     // Reduce update frequency at night time
-    if now.minute() % 5 != 0 && night_time(now) {
+    if now.minute() % 5 == 0 && night_time(now) {
         return;
     }
 
@@ -106,9 +109,36 @@ async fn update_clock(now: &DateTime<Local>, png: &Vec<u8>) {
         .await
         .expect("failed to set up network via rtnetlink");
 
-    let ssh_tcp_stream = open_tcp_connection().expect("failed to connect to Kindle");
+    let ssh_tcp_stream = match open_tcp_connection() {
+        Ok(ssh_tcp_stream) => ssh_tcp_stream,
+        Err(err) => {
+            warn!("failed to open TCP connection to Kindle, attempting recovery: {}", err);
+            if let Ok(kindle_opt) = usb::get_kindle() {
+                if let Some(kindle) = kindle_opt {
+                    if let Err(err) = usb::reset_kindle(&kindle) {
+                        error!("Couldn't reset Kindle USB: {:?}", err);
+                    }
+                } else {
+                    warn!("Kindle isn't connected!");
+                    return;
+                }
+            } else {
+                warn!("Error using libusb, proceeding blindly");
+            }
+            if network::try_recover().await.is_ok() {
+                if let Ok(ssh_tcp_stream) = open_tcp_connection() {
+                    ssh_tcp_stream
+                } else {
+                    return;
+                }
+            } else {
+                // Kindle is disconnected or USB needs reset
+                return;
+            }
+        }
+    };
     let mut ssh_session =
-        open_ssh_session(ssh_tcp_stream).expect("ssh authorized failed, is the password correct?");
+        open_ssh_session(ssh_tcp_stream).expect("ssh handshake failed, is the password correct?");
 
     eips_show_image(&mut ssh_session, png, now.minute() == 0)
         .expect("failed to send image to Kindle");

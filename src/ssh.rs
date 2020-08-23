@@ -47,9 +47,12 @@ pub fn amixer_set_master_volume(session: &mut Session, volume: u8) -> Result<(),
 }
 
 pub fn aplay_audio_nonblocking(session: &mut Session, audio: &[u8]) -> Result<(), ssh2::Error> {
+    let remote_path = Path::new("/dev/shm/out.wav");
+    let mut channel = session.scp_send(remote_path, 0o644, audio.len() as u64, None)?;
+    channel.write_all(audio).expect("failed to write audio");
+    channel.close()?;
     let mut channel = session.channel_session()?;
-    channel.exec("/usr/bin/aplay -v -N -")?;
-    channel.write_all(audio).unwrap();
+    channel.exec("/usr/bin/aplay -v -N /dev/shm/out.wav")?;
     channel.close()?;
     Ok(())
 }
