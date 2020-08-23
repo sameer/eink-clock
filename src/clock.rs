@@ -7,7 +7,7 @@ use metar::{
 use crate::render::set_font;
 use crate::{DPI, EMOJI_FONT, FONT, HEIGHT, TEMPERATURE_UNITS, WIDTH, WIND_SPEED_UNITS};
 
-pub fn draw_clock(ctx: &Context, date_time: &DateTime<Local>, current_metar: Option<Metar<'_>>) {
+pub fn draw_clock(ctx: &Context, date_time: &DateTime<Local>, current_metar: Option<&Metar<'_>>) {
     ctx.set_source_rgb(1.0, 1.0, 1.0);
     ctx.rectangle(0.0, 0.0, WIDTH as f64, HEIGHT as f64);
     ctx.fill();
@@ -48,7 +48,7 @@ fn draw_time(ctx: &Context, date_extents: TextExtents, date_time: &DateTime<Loca
     ctx.show_text(&time);
 }
 
-fn draw_current_weather(ctx: &Context, current_metar: Metar<'_>) {
+fn draw_current_weather(ctx: &Context, current_metar: &Metar<'_>) {
     use uom::fmt::DisplayStyle;
 
     let mut concise_observation = String::new();

@@ -26,6 +26,7 @@ use std::env;
 use std::io::Write;
 use std::net::{IpAddr, Ipv4Addr};
 
+use metar::Metar;
 use tokio::time;
 
 /// E Ink Pearl 1200x824 150 DPI 4-bit 16-level grayscale
@@ -75,11 +76,25 @@ pub async fn main() {
         time::Instant::now() + (start_of_next_minute(&now) - now).to_std().unwrap(),
         one_minute.to_std().unwrap(),
     );
-    let mut metar = None;
+    let mut metar_string = None;
     loop {
-        metar = get_metar().await.or(metar);
+        if now.minute() % 5 == 0 || metar_string.is_none() {
+            let new_metar_string = get_metar().await;
+            if let Some(new_metar_string) = new_metar_string {
+                let new_metar_is_ok = parse_metar_data(&new_metar_string)
+                    .map_err(|err| error!("could not parse metar: {}", err))
+                    .is_ok();
+                if new_metar_is_ok {
+                    metar_string = Some(new_metar_string);
+                }
+            }
+        }
+        let metar = metar_string
+            .as_ref()
+            .and_then(|metar_str| parse_metar_data(metar_str).ok());
+
         let next_minute = start_of_next_minute(&Local::now());
-        let png = generate_image(metar.as_ref().map(String::as_ref), &next_minute).await;
+        let png = generate_image(metar.as_ref(), &next_minute).await;
         // ^ precompute
         interval.tick().await;
         debug!("timer went off");
@@ -162,12 +177,7 @@ async fn get_metar() -> Option<String> {
         .map(|metar_bytes| String::from_utf8_lossy(&metar_bytes).to_string())
 }
 
-async fn generate_image(current_metar_str: Option<&str>, now: &DateTime<Local>) -> Vec<u8> {
-    let current_metar = current_metar_str.and_then(|metar_str| {
-        parse_metar_data(metar_str)
-            .map_err(|err| error!("could not parse metar: {}", err))
-            .ok()
-    });
+async fn generate_image(current_metar: Option<&Metar<'_>>, now: &DateTime<Local>) -> Vec<u8> {
     debug!("Current metar parsed {:?}", current_metar);
     let surf = create_surface().expect("failed to create cairo surface");
     let ctx = create_context(&surf);
