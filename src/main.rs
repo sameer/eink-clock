@@ -69,14 +69,13 @@ pub async fn main() {
     }
 
     let one_minute = Duration::minutes(1);
-    // want to delay kicking off interval until the next minute is reached
-    // not really possible with interval_at, currently
     let now = Local::now();
-    time::delay_for((start_of_next_minute(&now) - now).to_std().unwrap()).await;
 
-    let mut interval = time::interval(one_minute.to_std().unwrap());
+    let mut interval = time::interval_at(
+        time::Instant::now() + (start_of_next_minute(&now) - now).to_std().unwrap(),
+        one_minute.to_std().unwrap(),
+    );
     let mut metar = None;
-    interval.tick().await;
     loop {
         metar = get_metar().await.or(metar);
         let next_minute = start_of_next_minute(&Local::now());
@@ -112,7 +111,10 @@ async fn update_clock(now: &DateTime<Local>, png: &Vec<u8>) {
     let ssh_tcp_stream = match open_tcp_connection() {
         Ok(ssh_tcp_stream) => ssh_tcp_stream,
         Err(err) => {
-            warn!("failed to open TCP connection to Kindle, attempting recovery: {}", err);
+            warn!(
+                "failed to open TCP connection to Kindle, attempting recovery: {}",
+                err
+            );
             if let Ok(kindle_opt) = usb::get_kindle() {
                 if let Some(kindle) = kindle_opt {
                     if let Err(err) = usb::reset_kindle(&kindle) {
