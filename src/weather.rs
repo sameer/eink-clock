@@ -8,7 +8,7 @@ use crate::WEATHER_STATION;
 
 pub fn get_current_metar_data() -> Result<Vec<u8>, Error> {
     let url = format!(
-        "https://www.aviationweather.gov/adds/dataserver_current/httpparam?dataSource=metars&requestType=retrieve&format=xml&hoursBeforeNow=1&mostRecent=true&stationString={}",
+        "https://www.aviationweather.gov/adds/dataserver_current/httpparam?datasource=metars&requesttype=retrieve&format=xml&hoursBeforeNow=1.25&mostRecentForEachStation=constraint&stationString={}",
         WEATHER_STATION
     );
     let mut easy = Easy::new();
