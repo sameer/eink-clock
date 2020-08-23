@@ -87,7 +87,7 @@ pub async fn main() {
             std::io::stdout().write_all(&png).unwrap();
             debug!("done writing image to stdout");
         } else {
-            update_clock(&now, &png).await;
+            update_clock(&next_minute, &png).await;
             debug!("done updating clock")
         }
     }
