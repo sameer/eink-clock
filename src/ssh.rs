@@ -40,7 +40,7 @@ pub fn eips_show_image(
     debug!("{}", cmd);
     channel.exec(cmd)?;
     channel.close()?;
-    Ok(())
+    channel.wait_close()
 }
 
 pub fn amixer_set_master_volume(session: &mut Session, volume: u8) -> Result<(), ssh2::Error> {
@@ -59,9 +59,9 @@ pub fn aplay_audio_nonblocking(session: &mut Session, audio: &[u8]) -> Result<()
     channel.write_all(audio).expect("failed to write audio");
     channel.close()?;
     let mut channel = session.channel_session()?;
-    let cmd = "/usr/bin/aplay -v -N /dev/shm/out.wav";
+    let cmd = "/usr/bin/aplay -q -N /dev/shm/out.wav";
     debug!("{}", cmd);
     channel.exec(cmd)?;
     channel.close()?;
-    Ok(())
+    channel.wait_close()
 }
