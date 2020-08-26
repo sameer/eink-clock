@@ -4,9 +4,6 @@ extern crate clap;
 #[macro_use]
 extern crate log;
 
-use chrono::prelude::*;
-use chrono::{Duration, DurationRound};
-
 mod art;
 mod audio;
 mod clock;
@@ -26,7 +23,10 @@ use std::env;
 use std::io::Write;
 use std::net::{IpAddr, Ipv4Addr};
 
+use chrono::prelude::*;
+use chrono::{Duration, DurationRound};
 use metar::Metar;
+use rtnetlink::{new_connection, Handle};
 use tokio::time;
 
 /// E Ink Pearl 1200x824 150 DPI 4-bit 16-level grayscale
@@ -66,8 +66,18 @@ pub async fn main() {
     .get_matches();
     let debug = matches.is_present("debug");
     if debug {
-        info!("In debug mode, printing pngs to stdout");
+        info!("In debug mode, printing png to stdout");
+        let metar_string = get_metar().await;
+        let metar = metar_string
+            .as_ref()
+            .and_then(|metar_str| parse_metar_data(metar_str).ok());
+        let next_minute = start_of_next_minute(&Local::now());
+        let png = generate_image(metar.as_ref(), &next_minute).await;
+        std::io::stdout().write_all(&png).unwrap();
+        return;
     }
+    let (connection, handle, _) = new_connection().unwrap();
+    tokio::spawn(connection);
 
     let one_minute = Duration::minutes(1);
     let now = Local::now();
@@ -98,13 +108,8 @@ pub async fn main() {
         // ^ precompute
         interval.tick().await;
         debug!("timer went off");
-        if debug {
-            std::io::stdout().write_all(&png).unwrap();
-            debug!("done writing image to stdout");
-        } else {
-            update_clock(&next_minute, &png).await;
-            debug!("done updating clock")
-        }
+        update_clock(&handle, &next_minute, &png).await;
+        debug!("done updating clock")
     }
 }
 
@@ -113,13 +118,13 @@ fn start_of_next_minute(now: &DateTime<Local>) -> DateTime<Local> {
     now.duration_trunc(one_minute).unwrap() + one_minute
 }
 
-async fn update_clock(now: &DateTime<Local>, png: &Vec<u8>) {
+async fn update_clock(handle: &Handle, now: &DateTime<Local>, png: &Vec<u8>) {
     // Reduce update frequency at night time
     if now.minute() % 5 != 0 && night_time(now) {
         return;
     }
 
-    network::setup_if_down()
+    network::setup_if_down(handle)
         .await
         .expect("failed to set up network via rtnetlink");
 
@@ -142,7 +147,7 @@ async fn update_clock(now: &DateTime<Local>, png: &Vec<u8>) {
             } else {
                 warn!("error using libusb, proceeding blindly");
             }
-            if network::try_recover().await.is_ok() {
+            if network::try_recover(handle).await.is_ok() {
                 if let Ok(ssh_tcp_stream) = open_tcp_connection() {
                     ssh_tcp_stream
                 } else {
