@@ -115,7 +115,7 @@ fn start_of_next_minute(now: &DateTime<Local>) -> DateTime<Local> {
 
 async fn update_clock(now: &DateTime<Local>, png: &Vec<u8>) {
     // Reduce update frequency at night time
-    if now.minute() % 5 == 0 && night_time(now) {
+    if now.minute() % 5 != 0 && night_time(now) {
         return;
     }
 
@@ -132,20 +132,21 @@ async fn update_clock(now: &DateTime<Local>, png: &Vec<u8>) {
             );
             if let Ok(kindle_opt) = usb::get_kindle() {
                 if let Some(kindle) = kindle_opt {
-                    if let Err(err) = usb::reset_kindle(&kindle) {
-                        error!("Couldn't reset Kindle USB: {:?}", err);
-                    }
+                    // if let Err(err) = usb::reset_kindle(&kindle) {
+                    //     error!("Couldn't reset Kindle USB: {:?}", err);
+                    // }
                 } else {
                     warn!("Kindle isn't connected!");
                     return;
                 }
             } else {
-                warn!("Error using libusb, proceeding blindly");
+                warn!("error using libusb, proceeding blindly");
             }
             if network::try_recover().await.is_ok() {
                 if let Ok(ssh_tcp_stream) = open_tcp_connection() {
                     ssh_tcp_stream
                 } else {
+                    warn!("could not connect after recovery attempt");
                     return;
                 }
             } else {
@@ -154,8 +155,12 @@ async fn update_clock(now: &DateTime<Local>, png: &Vec<u8>) {
             }
         }
     };
-    let mut ssh_session =
-        open_ssh_session(ssh_tcp_stream).expect("ssh handshake failed, is the password correct?");
+    let mut ssh_session = if let Ok(cloned_ssh_tcp_stream) = ssh_tcp_stream.try_clone() {
+        open_ssh_session(cloned_ssh_tcp_stream)
+            .expect("ssh handshake failed, is the password correct?")
+    } else {
+        return;
+    };
 
     eips_show_image(&mut ssh_session, png, now.minute() == 0)
         .expect("failed to send image to Kindle");
@@ -168,6 +173,9 @@ async fn update_clock(now: &DateTime<Local>, png: &Vec<u8>) {
     ssh_session
         .disconnect(None, "done sending commands", None)
         .unwrap();
+    if let Err(err) = ssh_tcp_stream.shutdown(std::net::Shutdown::Both) {
+        warn!("error shutting down tcp connection, is this macOS? {}", err);
+    }
 }
 
 async fn get_metar() -> Option<String> {
