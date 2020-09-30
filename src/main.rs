@@ -201,5 +201,5 @@ async fn generate_image(current_metar: Option<&Metar<'_>>, now: &DateTime<Local>
 }
 
 fn night_time(now: &DateTime<Local>) -> bool {
-    now.hour() < 7 || now.hour() > 23
+    now.hour() < 7 || now.hour() > 22
 }

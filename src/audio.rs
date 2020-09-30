@@ -13,10 +13,10 @@ macro_rules! hours {
 
 pub fn play_audio_for_hour(
     session: &mut Session,
-    hour24: u32,
+    _hour24: u32,
     hour12: u32,
 ) -> Result<(), ssh2::Error> {
-    let volume = if hour24 < 7 || hour12 > 22 { 0 } else { 20 };
+    let volume = 20;
 
     amixer_set_master_volume(session, volume)?;
     hours!(session, hour12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,)
