@@ -37,15 +37,19 @@ pub fn eips_show_image(
     png: &[u8],
     full_update: bool,
 ) -> Result<(), ssh2::Error> {
+    let remote_path = Path::new("/dev/shm/out.png");
+    debug!("scp {} kindle", remote_path.display());
+    let mut channel = session.scp_send(remote_path, 0o644, png.len() as u64, None)?;
+    channel.write_all(png).expect("failed to write png");
+    channel.close()?;
     let mut channel = session.channel_session()?;
     let cmd = if full_update {
-        "/usr/sbin/eips -f -g /dev/fd/0"
+        "/usr/sbin/eips -f -g /dev/shm/out.png"
     } else {
-        "/usr/sbin/eips -g /dev/fd/0"
+        "/usr/sbin/eips -g /dev/shm/out.png"
     };
     debug!("{}", cmd);
     channel.exec(cmd)?;
-    channel.write_all(png).expect("failed to write png");
     consume_io(&mut channel).unwrap();
     channel.wait_eof()?;
     channel.close()?;
@@ -64,11 +68,15 @@ pub fn amixer_set_master_volume(session: &mut Session, volume: u8) -> Result<(),
 }
 
 pub fn aplay_audio_nonblocking(session: &mut Session, audio: &[u8]) -> Result<(), ssh2::Error> {
+    let remote_path = Path::new("/dev/shm/out.wav");
+    debug!("scp {} kindle", remote_path.display());
+    let mut channel = session.scp_send(remote_path, 0o644, audio.len() as u64, None)?;
+    channel.write_all(audio).expect("failed to write audio");
+    channel.close()?;
     let mut channel = session.channel_session()?;
-    let cmd = "/usr/bin/aplay -q -N -";
+    let cmd = "/usr/bin/aplay -q -N /dev/shm/out.wav";
     debug!("{}", cmd);
     channel.exec(cmd)?;
-    channel.write_all(audio).expect("failed to write audio");
     consume_io(&mut channel).unwrap();
     channel.wait_eof()?;
     channel.close()?;
