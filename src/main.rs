@@ -156,7 +156,7 @@ async fn update_clock(handle: &Handle, now: &DateTime<Local>, png: &Vec<u8>) {
                     return;
                 }
             } else {
-                // Kindle is disconnected or USB needs reset
+                warn!("Kindle is disconnected or USB needs reset");
                 return;
             }
         }
