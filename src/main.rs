@@ -71,7 +71,7 @@ pub async fn main() {
         let metar = metar_string
             .as_ref()
             .and_then(|metar_str| parse_metar_data(metar_str).ok());
-        let next_minute = start_of_next_minute(&Local::now());
+        let next_minute = start_of_next_minute(Local::now());
         let png = generate_image(metar.as_ref(), &next_minute).await;
         std::io::stdout().write_all(&png).unwrap();
         return;
@@ -79,41 +79,42 @@ pub async fn main() {
     let (connection, handle, _) = new_connection().unwrap();
     tokio::spawn(connection);
 
-    let one_minute = Duration::minutes(1);
-    let now = Local::now();
-
-    let mut interval = time::interval_at(
-        time::Instant::now() + (start_of_next_minute(&now) - now).to_std().unwrap(),
-        one_minute.to_std().unwrap(),
-    );
-    let mut metar_string = None;
+    let mut metar_state = None;
     loop {
-        if now.minute() % 5 == 0 || metar_string.is_none() {
+        let now = Local::now();
+        let next_minute = start_of_next_minute(now);
+        let should_update_metar = match &metar_state {
+            Some((_, metar_last_update)) => now - *metar_last_update > chrono::Duration::minutes(5),
+            None => true,
+        };
+        if should_update_metar {
             let new_metar_string = get_metar().await;
             if let Some(new_metar_string) = new_metar_string {
                 let new_metar_is_ok = parse_metar_data(&new_metar_string)
                     .map_err(|err| error!("could not parse metar: {}", err))
                     .is_ok();
                 if new_metar_is_ok {
-                    metar_string = Some(new_metar_string);
+                    metar_state = Some((new_metar_string, now));
                 }
             }
         }
-        let metar = metar_string
+        let metar = metar_state
             .as_ref()
-            .and_then(|metar_str| parse_metar_data(metar_str).ok());
+            .and_then(|(metar_str, _)| parse_metar_data(metar_str).ok());
 
-        let next_minute = start_of_next_minute(&Local::now());
         let png = generate_image(metar.as_ref(), &next_minute).await;
         // ^ precompute
-        interval.tick().await;
+        match (Local::now() - next_minute).to_std() {
+            Ok(duration) => time::delay_for(duration).await,
+            Err(_) => {}
+        }
         debug!("timer went off");
         update_clock(&handle, &next_minute, &png).await;
         debug!("done updating clock")
     }
 }
 
-fn start_of_next_minute(now: &DateTime<Local>) -> DateTime<Local> {
+fn start_of_next_minute<Tz: TimeZone>(now: DateTime<Tz>) -> DateTime<Tz> {
     let one_minute = Duration::minutes(1);
     now.duration_trunc(one_minute).unwrap() + one_minute
 }
