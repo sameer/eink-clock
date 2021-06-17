@@ -105,7 +105,7 @@ pub async fn main() {
         let png = generate_image(metar.as_ref(), &next_minute).await;
         // ^ precompute
         match (next_minute - Local::now()).to_std() {
-            Ok(duration) => time::delay_for(duration).await,
+            Ok(duration) => time::sleep(duration).await,
             Err(_) => {}
         }
         debug!("timer went off");

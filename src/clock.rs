@@ -161,7 +161,7 @@ fn draw_current_weather(ctx: &Context, current_metar: &Metar<'_>) {
             WeatherIntensity::Heavy => "\u{2795}",
             WeatherIntensity::Light => "\u{2796}",
             WeatherIntensity::Moderate => "\u{3030}",
-            WeatherIntensity::InVicinity => "\u{1F5FA}",
+            WeatherIntensity::InVicinity | WeatherIntensity::Recent => "\u{1F5FA}",
         };
         for condition in &weather.conditions {
             use WeatherCondition::*;

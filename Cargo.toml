@@ -17,11 +17,11 @@ metar = "0"
 uom = "0"
 png = "0"
 rtnetlink = "0"
-netlink-packet-route = "*"
+netlink-packet-route = "0"
 rusb = "0"
 ipnetwork = "0"
 futures = "0.3"
-tokio = { version = "0.2", features = ["rt-core", "time", "macros"] }
+tokio = { version = "1", features = ["full"] }
 
 [profile.release]
 opt-level = 'z'  # Optimize for size.
