@@ -1,4 +1,4 @@
-name: rhdlc
+name: eink-clock
 
 on:
   push:

@@ -27,7 +27,7 @@ fn draw_date(ctx: &Context, date: Date<Local>) -> TextExtents {
 
     set_font(ctx, FONT);
     ctx.set_font_size(DPI * 0.50);
-    let extents = ctx.text_extents(&date);
+    let extents = ctx.text_extents(&date).unwrap();
     ctx.move_to((WIDTH as f64 - extents.width) / 2.0, extents.height);
     ctx.show_text(&date);
     ctx.stroke();
@@ -40,7 +40,7 @@ fn draw_time(ctx: &Context, date_extents: TextExtents, date_time: &DateTime<Loca
 
     set_font(ctx, FONT);
     ctx.set_font_size(DPI * 1.5);
-    let time_extents = ctx.text_extents(&time);
+    let time_extents = ctx.text_extents(&time).unwrap();
     ctx.move_to(
         (WIDTH as f64 - time_extents.width) / 2.0,
         date_extents.height * 1.5 + time_extents.height,
@@ -81,7 +81,7 @@ fn draw_current_weather(ctx: &Context, current_metar: &Metar<'_>) {
 
     set_font(ctx, FONT);
     ctx.set_font_size(DPI * 0.45);
-    let extents = ctx.text_extents(&concise_observation);
+    let extents = ctx.text_extents(&concise_observation).unwrap();
     ctx.move_to(
         WIDTH as f64 * 0.25 - extents.width * 0.5,
         HEIGHT as f64 - (extents.height + extents.y_bearing) * 0.5,
@@ -127,7 +127,7 @@ fn draw_current_weather(ctx: &Context, current_metar: &Metar<'_>) {
             for layer in layers {
                 let level = layer.0 as f64 / 8.;
                 let text = format!("{} ft", layer.1 * 100);
-                let extents = ctx.text_extents(&text);
+                let extents = ctx.text_extents(&text).unwrap();
                 ctx.move_to(
                     gradient_x + gradient_width / 2. - extents.width / 2. - extents.x_bearing,
                     gradient_y + (1. - layer.1 as f64 / max_height) * gradient_height,
@@ -192,7 +192,7 @@ fn draw_current_weather(ctx: &Context, current_metar: &Metar<'_>) {
     while {
         // Silly shrink to fit, I'm not sure how to do it the right way
         ctx.set_font_size(initial_scale);
-        extents = ctx.text_extents(&weather_emojis);
+        extents = ctx.text_extents(&weather_emojis).unwrap();
         extents.width > WIDTH as f64 / 2.0
     } {
         initial_scale *= 0.9;
@@ -209,15 +209,15 @@ fn draw_art(ctx: &Context, date_time: &DateTime<Local>) {
     let surface = crate::art::get_surface_for_hour12(hour12);
     ctx.set_source_surface(
         &surface,
-        WIDTH as f64 * 0.75 - surface.get_width() as f64 * 0.5,
-        HEIGHT as f64 * 0.75 - surface.get_height() as f64 * 0.5,
-    );
-    ctx.paint();
+        WIDTH as f64 * 0.75 - surface.width() as f64 * 0.5,
+        HEIGHT as f64 * 0.75 - surface.height() as f64 * 0.5,
+    ).unwrap();
+    ctx.paint().unwrap();
     ctx.set_source_rgb(0.0, 0.0, 0.0);
     set_font(ctx, FONT);
     ctx.set_font_size(DPI * 0.25);
     let art_name = crate::art::get_name_for_hour12(hour12);
-    let extents = ctx.text_extents(&art_name);
+    let extents = ctx.text_extents(&art_name).unwrap();
     ctx.move_to(
         WIDTH as f64 * 0.75 - extents.width * 0.5,
         HEIGHT as f64 - (extents.height + extents.y_bearing),

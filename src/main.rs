@@ -67,9 +67,10 @@ pub async fn main() {
     let debug = matches.is_present("debug");
     if debug {
         info!("In debug mode, printing png to stdout");
-        let metar_string = get_metar().await;
+        let metar_string = weather::get_current_metar_data().await;
         let metar = metar_string
             .as_ref()
+            .ok()
             .and_then(|metar_str| parse_metar_data(metar_str).ok());
         let next_minute = start_of_next_minute(Local::now());
         let png = generate_image(metar.as_ref(), &next_minute).await;
@@ -88,8 +89,8 @@ pub async fn main() {
             None => true,
         };
         if should_update_metar {
-            let new_metar_string = get_metar().await;
-            if let Some(new_metar_string) = new_metar_string {
+            let new_metar_string = weather::get_current_metar_data().await;
+            if let Ok(new_metar_string) = new_metar_string {
                 let new_metar_is_ok = parse_metar_data(&new_metar_string)
                     .map_err(|err| error!("could not parse metar: {}", err))
                     .is_ok();
@@ -182,13 +183,6 @@ async fn update_clock(handle: &Handle, now: &DateTime<Local>, png: &Vec<u8>) {
     if let Err(err) = ssh_tcp_stream.shutdown(std::net::Shutdown::Both) {
         warn!("error shutting down tcp connection, is this macOS? {}", err);
     }
-}
-
-async fn get_metar() -> Option<String> {
-    get_current_metar_data()
-        .map_err(|err| error!("failed to get metar from aviationweather.gov: {}", err))
-        .ok()
-        .map(|metar_bytes| String::from_utf8_lossy(&metar_bytes).to_string())
 }
 
 async fn generate_image(current_metar: Option<&Metar<'_>>, now: &DateTime<Local>) -> Vec<u8> {

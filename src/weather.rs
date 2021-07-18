@@ -1,34 +1,14 @@
-use curl::{
-    easy::{Easy, List},
-    Error,
-};
 use metar::{Metar, MetarError};
 
 use crate::WEATHER_STATION;
 
-pub fn get_current_metar_data() -> Result<Vec<u8>, Error> {
+pub async fn get_current_metar_data() -> reqwest::Result<String> {
     let url = format!(
         "https://www.aviationweather.gov/adds/dataserver_current/httpparam?datasource=metars&requesttype=retrieve&format=xml&hoursBeforeNow=1.25&mostRecentForEachStation=constraint&stationString={}",
         WEATHER_STATION
     );
-    let mut easy = Easy::new();
-    easy.url(&url)?;
-    let mut list = List::new();
-    list.append(&format!(
-        "User-Agent: curl/{}",
-        curl::Version::get().version()
-    ))?;
-    easy.http_headers(list)?;
-    let mut dst = vec![];
-    {
-        let mut transfer = easy.transfer();
-        transfer.write_function(|data| {
-            dst.extend_from_slice(data);
-            Ok(data.len())
-        })?;
-        transfer.perform()?;
-    }
-    Ok(dst)
+
+    reqwest::get(url).await?.text().await
 }
 
 pub fn parse_metar_data(data: &str) -> Result<Metar<'_>, MetarError<'_>> {

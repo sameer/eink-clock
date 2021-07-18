@@ -7,7 +7,7 @@ pub fn create_surface() -> Result<ImageSurface, Error> {
 }
 
 pub fn create_context(surf: &ImageSurface) -> Context {
-    let ctx = Context::new(surf);
+    let ctx = Context::new(surf).unwrap();
     ctx.translate(HEIGHT as f64 / 2., WIDTH as f64 / 2.);
     ctx.rotate(-90.0 * std::f64::consts::PI / 180.0);
     ctx.translate(WIDTH as f64 / -2., HEIGHT as f64 / -2.);
@@ -15,8 +15,8 @@ pub fn create_context(surf: &ImageSurface) -> Context {
 }
 
 pub fn set_font(ctx: &Context, font_name: &str) {
-    let font = FontFace::toy_create(font_name, FontSlant::Normal, FontWeight::Normal);
-    let font_opts = FontOptions::default();
+    let font = FontFace::toy_create(font_name, FontSlant::Normal, FontWeight::Normal).unwrap();
+    let font_opts = FontOptions::new().unwrap();
     ctx.set_font_face(&font);
     ctx.set_font_options(&font_opts);
 }
